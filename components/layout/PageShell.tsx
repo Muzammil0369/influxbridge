@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { ArrowRight, Command, Network, Search, X } from "lucide-react";
+import ScrollWorldLoader from "@/components/three/ScrollWorldLoader";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -183,7 +184,11 @@ export function Footer() {
 
         <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-white/40">
           {navLinks.map((l) => (
-            <Link key={l.href} href={l.href} className="transition hover:text-white">
+            <Link
+              key={l.href}
+              href={l.href}
+              className="transition hover:text-white"
+            >
               {l.label}
             </Link>
           ))}
@@ -201,11 +206,14 @@ export function Footer() {
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
     <main className="relative min-h-screen overflow-x-hidden text-white">
-      {/* Solid background sits at -z-20, BELOW the 3D canvas */}
+      {/* Solid atmosphere — sits BEHIND the 3D canvas */}
       <div className="pointer-events-none fixed inset-0 -z-20 bg-[#02050f]">
         <div className="absolute left-1/2 top-[-400px] h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-blue-600/[0.08] blur-[140px]" />
         <div className="absolute bottom-[-300px] right-[-200px] h-[600px] w-[600px] rounded-full bg-purple-600/[0.06] blur-[140px]" />
       </div>
+
+      {/* 🌍 THE WORLD — renders on every page using PageShell */}
+      <ScrollWorldLoader />
 
       <Navbar />
       <div className="relative z-10">{children}</div>

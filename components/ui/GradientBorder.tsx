@@ -13,7 +13,7 @@ export function GradientBorder({
     <div
       className={`rounded-2xl bg-gradient-to-b ${from} ${to} p-[1px] ${className}`}
     >
-      <div className="h-full w-full rounded-2xl bg-[#060b18]/90 backdrop-blur-sm">
+      <div className="h-full w-full rounded-2xl bg-[#02050f]/70 backdrop-blur-md">
         {children}
       </div>
     </div>
