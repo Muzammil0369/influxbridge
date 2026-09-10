@@ -6,7 +6,7 @@ import { Stars, Sparkles, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
 /* ─────────────────────────────────────────────────────────────
-   EARTH TEXTURE
+   ULTRA-HD PROCEDURAL EARTH TEXTURE
 ───────────────────────────────────────────────────────────── */
 function makeEarthTexture(size = 1024): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -16,25 +16,29 @@ function makeEarthTexture(size = 1024): THREE.CanvasTexture {
   const W = canvas.width;
   const H = canvas.height;
 
+  // Deep space-blue ocean gradient with atmospheric depth
   const oceanGrad = ctx.createLinearGradient(0, 0, W, H);
-  oceanGrad.addColorStop(0, "#020e2e");
-  oceanGrad.addColorStop(0.5, "#031540");
-  oceanGrad.addColorStop(1, "#010b22");
+  oceanGrad.addColorStop(0, "#010818");
+  oceanGrad.addColorStop(0.5, "#020f30");
+  oceanGrad.addColorStop(1, "#010614");
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, W, H);
 
-  ctx.globalAlpha = 0.06;
-  for (let i = 0; i < 40; i++) {
+  // Bioluminescent deep-sea grid / data currents
+  ctx.globalAlpha = 0.08;
+  for (let i = 0; i < 60; i++) {
     const x = Math.random() * W;
     const y = Math.random() * H;
-    const g = ctx.createRadialGradient(x, y, 0, x, y, 80 + Math.random() * 120);
-    g.addColorStop(0, "#1a6aff");
+    const g = ctx.createRadialGradient(x, y, 0, x, y, 100 + Math.random() * 150);
+    g.addColorStop(0, "#00f0ff");
+    g.addColorStop(0.5, "#1a6aff");
     g.addColorStop(1, "transparent");
     ctx.fillStyle = g;
     ctx.fillRect(0, 0, W, H);
   }
   ctx.globalAlpha = 1;
 
+  // Cinematic continental plates with cybernetic tech lines
   const continents: [number, number, number, number, number][] = [
     [0.52, 0.28, 0.055, 0.09, -5],
     [0.52, 0.48, 0.065, 0.14, 5],
@@ -57,9 +61,9 @@ function makeEarthTexture(size = 1024): THREE.CanvasTexture {
     ctx.rotate((rot * Math.PI) / 180);
 
     const landGrad = ctx.createRadialGradient(-rx * 0.3, -ry * 0.3, 0, 0, 0, Math.max(rx, ry));
-    landGrad.addColorStop(0, "#1a3a2a");
-    landGrad.addColorStop(0.5, "#0f2a1e");
-    landGrad.addColorStop(1, "#071510");
+    landGrad.addColorStop(0, "#0d2822");
+    landGrad.addColorStop(0.5, "#071814");
+    landGrad.addColorStop(1, "#030c0a");
 
     ctx.beginPath();
     ctx.ellipse(0, 0, rx, ry, 0, 0, Math.PI * 2);
@@ -67,7 +71,7 @@ function makeEarthTexture(size = 1024): THREE.CanvasTexture {
     ctx.fill();
 
     const hiGrad = ctx.createRadialGradient(-rx * 0.4, -ry * 0.4, 0, 0, 0, rx * 0.7);
-    hiGrad.addColorStop(0, "rgba(40,90,60,0.5)");
+    hiGrad.addColorStop(0, "rgba(0,240,255,0.35)");
     hiGrad.addColorStop(1, "transparent");
     ctx.fillStyle = hiGrad;
     ctx.fill();
@@ -75,47 +79,50 @@ function makeEarthTexture(size = 1024): THREE.CanvasTexture {
     ctx.restore();
   });
 
+  // Glowing node city lights
   ctx.globalCompositeOperation = "screen";
   continents.forEach(([cxF, cyF, rxF, ryF]) => {
     const cx = cxF * W;
     const cy = cyF * H;
     const rx = rxF * W;
     const ry = ryF * H;
-    const count = Math.floor(20 + Math.random() * 40);
+    const count = Math.floor(30 + Math.random() * 30);
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const r = Math.sqrt(Math.random());
       const x = cx + rx * r * Math.cos(angle);
       const y = cy + ry * r * Math.sin(angle);
-      const size = 1 + Math.random() * 2.5;
-      const g = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
-      g.addColorStop(0, "rgba(255,220,100,0.9)");
-      g.addColorStop(0.4, "rgba(100,160,255,0.4)");
+      const size = 1 + Math.random() * 2;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, size * 4);
+      g.addColorStop(0, "rgba(0,240,255,0.95)");
+      g.addColorStop(0.4, "rgba(100,180,255,0.5)");
       g.addColorStop(1, "transparent");
       ctx.fillStyle = g;
       ctx.beginPath();
-      ctx.arc(x, y, size * 3, 0, Math.PI * 2);
+      ctx.arc(x, y, size * 4, 0, Math.PI * 2);
       ctx.fill();
     }
   });
   ctx.globalCompositeOperation = "source-over";
 
+  // Atmospheric polar ice caps
   const northIce = ctx.createLinearGradient(0, 0, 0, H * 0.14);
-  northIce.addColorStop(0, "rgba(200,230,255,0.85)");
+  northIce.addColorStop(0, "rgba(220,240,255,0.95)");
   northIce.addColorStop(1, "transparent");
   ctx.fillStyle = northIce;
   ctx.fillRect(0, 0, W, H * 0.14);
 
   const southIce = ctx.createLinearGradient(0, H * 0.86, 0, H);
   southIce.addColorStop(0, "transparent");
-  southIce.addColorStop(1, "rgba(200,230,255,0.7)");
+  southIce.addColorStop(1, "rgba(220,240,255,0.85)");
   ctx.fillStyle = southIce;
   ctx.fillRect(0, H * 0.86, W, H * 0.14);
 
+  // Cinematic sun lighting gradient overlay
   const litGrad = ctx.createRadialGradient(W * 0.3, H * 0.25, 0, W * 0.5, H * 0.5, W * 0.65);
-  litGrad.addColorStop(0, "rgba(80,140,255,0.22)");
-  litGrad.addColorStop(0.5, "rgba(20,60,180,0.04)");
-  litGrad.addColorStop(1, "rgba(0,0,0,0.4)");
+  litGrad.addColorStop(0, "rgba(0,180,255,0.28)");
+  litGrad.addColorStop(0.5, "rgba(10,50,160,0.06)");
+  litGrad.addColorStop(1, "rgba(0,0,0,0.5)");
   ctx.fillStyle = litGrad;
   ctx.fillRect(0, 0, W, H);
 
@@ -123,7 +130,7 @@ function makeEarthTexture(size = 1024): THREE.CanvasTexture {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   SCROLL STATE
+   SCROLL STATE TRACKING
 ───────────────────────────────────────────────────────────── */
 const scrollState = {
   raw: 0,
@@ -157,7 +164,7 @@ function useScrollTracker() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   GLOW RING
+   PRECISE GLOW RING
 ───────────────────────────────────────────────────────────── */
 function GlowRing({
   radius,
@@ -190,12 +197,12 @@ function GlowRing({
   return (
     <group ref={ref} rotation={rotation}>
       <mesh>
-        <torusGeometry args={[radius, tubeRadius, 24, 192]} />
+        <torusGeometry args={[radius, tubeRadius, 32, 256]} />
         <meshBasicMaterial color={color} transparent opacity={opacity} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
       <mesh>
-        <torusGeometry args={[radius, tubeRadius * 3.5, 12, 192]} />
-        <meshBasicMaterial color={glowColor} transparent opacity={opacity * 0.18} blending={THREE.AdditiveBlending} depthWrite={false} />
+        <torusGeometry args={[radius, tubeRadius * 3.5, 16, 256]} />
+        <meshBasicMaterial color={glowColor} transparent opacity={opacity * 0.2} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
     </group>
   );
@@ -238,8 +245,8 @@ function OrbitalSphere({
           <meshBasicMaterial color="#ffffff" />
         </mesh>
         <mesh position={[radius, 0, 0]}>
-          <sphereGeometry args={[size * 2.5, 16, 16]} />
-          <meshBasicMaterial color={color} transparent opacity={0.35} blending={THREE.AdditiveBlending} depthWrite={false} />
+          <sphereGeometry args={[size * 3, 16, 16]} />
+          <meshBasicMaterial color={color} transparent opacity={0.4} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
       </group>
     </group>
@@ -262,14 +269,14 @@ function NebulaCloud({
 }) {
   return (
     <mesh position={position}>
-      <sphereGeometry args={[scale, 8, 8]} />
+      <sphereGeometry args={[scale, 16, 16]} />
       <meshBasicMaterial color={color} transparent opacity={opacity} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.BackSide} />
     </mesh>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────
-   HOLO PLANET
+   HOLO PLANET — AGENCY GRADE VISUAL FIDELITY
 ───────────────────────────────────────────────────────────── */
 function HoloPlanet() {
   const planetGroup = useRef<THREE.Group>(null);
@@ -281,7 +288,6 @@ function HoloPlanet() {
   const groupRotationX = useRef(0);
   const orbitRotation = useRef(0);
 
-  // Restored full high-res 1024 texture for crystal clarity
   const earthTexture = useMemo(() => makeEarthTexture(1024), []);
 
   useFrame((_, delta) => {
@@ -293,7 +299,7 @@ function HoloPlanet() {
     const vel = scrollState.smoothVelocity;
     const absVel = Math.abs(vel);
 
-    const baseEarthSpeed = 0.04;
+    const baseEarthSpeed = 0.035;
     const scrollBoost = absVel * 2.2;
 
     const earthSpeed = baseEarthSpeed + scrollBoost;
@@ -324,34 +330,36 @@ function HoloPlanet() {
 
   return (
     <group ref={planetGroup} position={[1.6, 0.3, 0]}>
-      {/* Restored high-poly count for smooth sphere geometry */}
+      {/* High-poly crisp sphere geometry */}
       <mesh ref={coreRef}>
         <sphereGeometry args={[PLANET_R, 96, 96]} />
-        <meshStandardMaterial map={earthTexture} roughness={0.65} metalness={0.05} emissive="#0a1a40" emissiveIntensity={0.3} />
+        <meshStandardMaterial map={earthTexture} roughness={0.6} metalness={0.1} emissive="#002244" emissiveIntensity={0.35} />
       </mesh>
 
+      {/* Cyber wireframe grid overlay */}
       <mesh>
-        <sphereGeometry args={[PLANET_R + 0.008, 32, 16]} />
-        <meshBasicMaterial color="#1a50cc" wireframe transparent opacity={0.07} blending={THREE.AdditiveBlending} />
+        <sphereGeometry args={[PLANET_R + 0.01, 32, 16]} />
+        <meshBasicMaterial color="#00f0ff" wireframe transparent opacity={0.06} blending={THREE.AdditiveBlending} />
       </mesh>
 
+      {/* Cinematic multi-layered atmospheric rim glow */}
       <mesh scale={1.04}>
-        <sphereGeometry args={[PLANET_R, 32, 32]} />
-        <meshBasicMaterial color="#1a5aff" transparent opacity={0.08} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+        <sphereGeometry args={[PLANET_R, 48, 48]} />
+        <meshBasicMaterial color="#0088ff" transparent opacity={0.1} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
 
-      <mesh scale={1.18}>
-        <sphereGeometry args={[PLANET_R, 32, 32]} />
-        <meshBasicMaterial color="#2255ee" transparent opacity={0.055} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
+      <mesh scale={1.15}>
+        <sphereGeometry args={[PLANET_R, 48, 48]} />
+        <meshBasicMaterial color="#00f0ff" transparent opacity={0.05} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
 
       <group ref={orbitsRef}>
-        <GlowRing radius={3.5} tubeRadius={0.018} color="#f4c430" glowColor="#ffd700" opacity={0.85} rotation={[1.3, 0.15, 0.05]} animate speed={0.004} />
-        <GlowRing radius={4.1} tubeRadius={0.014} color="#22d3ee" glowColor="#38bdf8" opacity={0.7} rotation={[-0.7, 0.35, 0.2]} animate speed={-0.003} />
-        <GlowRing radius={3.0} tubeRadius={0.01} color="#a855f7" glowColor="#c084fc" opacity={0.45} rotation={[0.4, -0.5, -0.7]} animate speed={0.002} />
-        <GlowRing radius={2.55} tubeRadius={0.007} color="#60a5fa" glowColor="#3b82f6" opacity={0.3} rotation={[0.8, 0.2, 1.1]} />
+        <GlowRing radius={3.5} tubeRadius={0.018} color="#f4c430" glowColor="#ffd700" opacity={0.9} rotation={[1.3, 0.15, 0.05]} animate speed={0.004} />
+        <GlowRing radius={4.1} tubeRadius={0.014} color="#00f0ff" glowColor="#38bdf8" opacity={0.8} rotation={[-0.7, 0.35, 0.2]} animate speed={-0.003} />
+        <GlowRing radius={3.0} tubeRadius={0.01} color="#a855f7" glowColor="#c084fc" opacity={0.5} rotation={[0.4, -0.5, -0.7]} animate speed={0.002} />
+        <GlowRing radius={2.55} tubeRadius={0.007} color="#60a5fa" glowColor="#3b82f6" opacity={0.35} rotation={[0.8, 0.2, 1.1]} />
 
-        <OrbitalSphere radius={3.5} orbitRotation={[1.3, 0.15, 0.05]} phase={0.8} size={0.07} color="#22d3ee" speed={0.4} />
+        <OrbitalSphere radius={3.5} orbitRotation={[1.3, 0.15, 0.05]} phase={0.8} size={0.07} color="#00f0ff" speed={0.4} />
         <OrbitalSphere radius={4.1} orbitRotation={[-0.7, 0.35, 0.2]} phase={2.2} size={0.1} color="#60a5fa" speed={-0.25} />
         <OrbitalSphere radius={3.0} orbitRotation={[0.4, -0.5, -0.7]} phase={1.5} size={0.055} color="#c084fc" speed={0.55} />
       </group>
@@ -360,25 +368,26 @@ function HoloPlanet() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   WORLD
+   WORLD ENVIRONMENT
 ───────────────────────────────────────────────────────────── */
 function World() {
   useScrollTracker();
 
   return (
     <>
-      <fog attach="fog" args={["#020617", 10, 28]} />
+      <fog attach="fog" args={["#010409", 10, 28]} />
 
-      <ambientLight intensity={0.5} color="#aaccff" />
-      <directionalLight position={[-4, 5, 4]} intensity={3.5} color="#8bb8ff" />
-      <directionalLight position={[5, -2, -3]} intensity={0.6} color="#5533aa" />
+      <ambientLight intensity={0.6} color="#aaccff" />
+      <directionalLight position={[-4, 5, 4]} intensity={4.0} color="#99ccff" />
+      <directionalLight position={[5, -2, -3]} intensity={0.8} color="#6644cc" />
+      <pointLight position={[0, 0, 5]} intensity={12} distance={12} color="#00f0ff" />
 
-      {/* Restored rich starfield environment */}
-      <Stars radius={90} depth={50} count={3500} factor={3.5} saturation={0.6} fade speed={0.35} />
-      <Sparkles count={200} scale={[20, 14, 10]} size={1.2} speed={0.15} opacity={0.25} color="#88bbff" />
+      <Stars radius={90} depth={50} count={3500} factor={3.5} saturation={0.8} fade speed={0.35} />
+      <Sparkles count={200} scale={[20, 14, 10]} size={1.3} speed={0.15} opacity={0.3} color="#00f0ff" />
 
-      <NebulaCloud position={[-7, 2, -8]} scale={5} color="#0a1a6a" opacity={0.18} />
-      <NebulaCloud position={[7, -1, -9]} scale={4} color="#0a0a40" opacity={0.14} />
+      <NebulaCloud position={[-7, 2, -8]} scale={6} color="#051040" opacity={0.22} />
+      <NebulaCloud position={[7, -1, -9]} scale={5} color="#020420" opacity={0.18} />
+      <NebulaCloud position={[0, -3, -10]} scale={8} color="#010210" opacity={0.3} />
 
       <HoloPlanet />
 
@@ -388,21 +397,20 @@ function World() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   EXPORT
+   EXPORT CANVAS (High-End Agency Configuration)
 ───────────────────────────────────────────────────────────── */
 export default function ScrollWorld() {
   return (
     <div className="pointer-events-none fixed inset-0 z-[1]">
       <Canvas
         camera={{ position: [0, 0.5, 9], fov: 42 }}
-        // Keep crisp native pixel tracking while optimizing frame rendering loop
-        dpr={[1, 2]}
+        dpr={[1, 2]} // Crisp rendering on high-res displays while protecting performance
         gl={{
           antialias: true,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.1,
+          toneMappingExposure: 1.2,
         }}
       >
         <World />
