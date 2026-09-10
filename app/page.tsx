@@ -265,7 +265,7 @@ export default function Home() {
           <div className="grid gap-12 lg:grid-cols-12 lg:items-center">
             <div className="relative z-20 lg:col-span-7">
               <TextReveal>
-                <div className="mb-6 inline-flex rounded-full border border-[#00aaff]/40 bg-[#031426]/80 px-4 py-1.5 backdrop-blur-md">
+                <div className="mb-6 inline-flex rounded-full border border-[#00aaff]/40 bg-[#031426]/80 px-4 py-1.5 backdrop-blur-md shadow-[0_0_20px_rgba(0,170,255,0.2)]">
                   <span className="text-[11px] font-bold uppercase tracking-[.18em] text-[#20c4ff]">
                     Web3 Growth Infrastructure
                   </span>
@@ -276,7 +276,7 @@ export default function Home() {
                 <TextReveal>Connect Brands</TextReveal>
                 <TextReveal delay={100}>With</TextReveal>
                 <TextReveal delay={200}>
-                  <span className="bg-gradient-to-r from-[#16b5ff] via-[#168dff] to-[#a044ff] bg-clip-text font-semibold text-transparent">
+                  <span className="bg-gradient-to-r from-[#16b5ff] via-[#168dff] to-[#a044ff] bg-clip-text font-semibold text-transparent drop-shadow-[0_0_30px_rgba(0,150,255,0.4)]">
                     Influence.
                   </span>
                 </TextReveal>
@@ -292,14 +292,14 @@ export default function Home() {
                 <div className="mt-10 flex flex-wrap gap-4">
                   <Link
                     href="/contact"
-                    className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#079ef5] to-[#9d3df4] px-8 py-4 text-sm font-bold shadow-[0_0_30px_rgba(0,139,255,.35)] transition hover:brightness-110"
+                    className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#079ef5] to-[#9d3df4] px-8 py-4 text-sm font-bold shadow-[0_0_30px_rgba(0,139,255,.45)] transition-all hover:scale-105 hover:brightness-110"
                   >
                     Start a Campaign
                     <ArrowRight size={16} />
                   </Link>
                   <Link
                     href="/influencers"
-                    className="flex items-center gap-2 rounded-full border border-[#009cff]/60 bg-[#031122]/80 px-8 py-4 text-sm font-semibold backdrop-blur-md transition hover:bg-white/[0.08]"
+                    className="flex items-center gap-2 rounded-full border border-[#009cff]/60 bg-[#031122]/80 px-8 py-4 text-sm font-semibold backdrop-blur-md transition-all hover:bg-white/[0.08]"
                   >
                     Explore Influencers
                   </Link>
@@ -327,11 +327,11 @@ export default function Home() {
           </div>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00aaff] to-transparent shadow-[0_0_16px_#008cff]" />
+        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-[#00aaff] to-transparent shadow-[0_0_20px_#008cff]" />
       </section>
 
       {/* STATS */}
-      <section className="relative z-10 border-y border-blue-500/15 bg-[#020914]/95 backdrop-blur-md py-4">
+      <section className="relative z-10 border-y border-blue-500/20 bg-[#020914]/95 backdrop-blur-md py-6 shadow-[0_0_30px_rgba(0,100,255,0.1)]">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 lg:px-12">
           <Stat number="10K+" label="Community Reach" />
           <StatDivider />
@@ -365,7 +365,7 @@ export default function Home() {
               <TextReveal delay={300}>
                 <Link
                   href="/services"
-                  className="mt-8 inline-flex items-center gap-2 rounded-full border border-cyan-500/60 px-7 py-3.5 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/10"
+                  className="mt-8 inline-flex items-center gap-2 rounded-full border border-cyan-500/60 px-7 py-3.5 text-sm font-semibold text-cyan-300 transition-all hover:bg-cyan-500/10 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)]"
                 >
                   Explore All Services
                   <ArrowRight size={14} />
@@ -403,8 +403,8 @@ export default function Home() {
         </div>
 
         <div className="relative w-full overflow-hidden py-4">
-          <div className="absolute left-0 inset-y-0 w-24 bg-gradient-to-r from-[#01060e] to-transparent z-20 pointer-events-none" />
-          <div className="absolute right-0 inset-y-0 w-24 bg-gradient-to-l from-[#01060e] to-transparent z-20 pointer-events-none" />
+          <div className="absolute left-0 inset-y-0 w-32 bg-gradient-to-r from-[#01060e] to-transparent z-20 pointer-events-none" />
+          <div className="absolute right-0 inset-y-0 w-32 bg-gradient-to-l from-[#01060e] to-transparent z-20 pointer-events-none" />
           
           <div className="flex w-max animate-marquee gap-6 hover:[animation-play-state:paused]">
             {[...creators, ...creators].map((creator, idx) => (
@@ -416,27 +416,46 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS */}
-      <section id="about" className="relative z-10 border-b border-white/[0.04] bg-[#01060d]/80 py-28 backdrop-blur-sm">
+      {/* HOW IT WORKS (Ultra-Sexy 3D Holographic System Visual Match) */}
+      <section id="about" className="relative z-10 border-b border-white/[0.04] bg-[#01060d]/80 py-28 backdrop-blur-sm overflow-hidden">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
           <div className="grid gap-16 lg:grid-cols-12 lg:items-center">
-            <div className="relative flex h-[350px] lg:col-span-5 items-center justify-center">
-              <div className="absolute h-[240px] w-[400px] rotate-[8deg] rounded-[50%] border border-blue-400/50 shadow-[0_0_25px_rgba(0,130,255,.2)]" />
-              <div className="absolute h-[180px] w-[440px] -rotate-[8deg] rounded-[50%] border border-purple-500/50" />
-              <div className="absolute h-[220px] w-[220px] rounded-full bg-blue-600/15 blur-[40px]" />
-              <div className="relative flex h-32 w-32 items-center justify-center rounded-full border border-cyan-400/60 bg-[#031329] shadow-[0_0_45px_rgba(0,139,255,.45)]">
-                <img src="/a-logo.png" alt="" className="h-16 w-16 object-contain" />
+            
+            {/* Holographic 3D Orbit Matching Image */}
+            <div className="relative flex h-[420px] lg:col-span-5 items-center justify-center">
+              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                {/* Glowing orbital rings */}
+                <div className="absolute h-[300px] w-[500px] rotate-[12deg] rounded-[50%] border border-cyan-400/40 shadow-[0_0_35px_rgba(0,180,255,0.25)] animate-pulse" />
+                <div className="absolute h-[240px] w-[540px] -rotate-[12deg] rounded-[50%] border border-purple-500/40 shadow-[0_0_35px_rgba(160,50,255,0.2)]" />
+                <div className="absolute h-[260px] w-[260px] rounded-full bg-gradient-to-br from-blue-600/30 to-purple-600/20 blur-[60px]" />
               </div>
-              <div className="absolute left-[5%] top-[20%] rounded-full border border-blue-400/50 bg-[#06182c] px-4 py-2 text-sm">
-                <Building2 size={18} className="inline text-cyan-400 mr-2" />
+
+              {/* Central Glowing Core */}
+              <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-cyan-400/80 bg-gradient-to-br from-[#041e3d] to-[#010b18] shadow-[0_0_60px_rgba(0,180,255,0.6)] z-20">
+                <div className="absolute inset-0 rounded-full border border-cyan-300/30 animate-ping opacity-20" />
+                <img src="/a-logo.png" alt="" className="h-16 w-16 object-contain drop-shadow-[0_0_15px_rgba(0,200,255,0.8)]" />
+              </div>
+
+              {/* Company Node Badge */}
+              <div className="absolute left-[4%] top-[20%] z-30 flex items-center gap-2.5 rounded-full border border-blue-400/70 bg-[#06182c]/95 px-4.5 py-2.5 text-xs font-semibold backdrop-blur-xl shadow-[0_0_25px_rgba(0,140,255,0.4)]">
+                <Building2 size={16} className="text-cyan-400" />
                 Company
               </div>
-              <div className="absolute right-[5%] top-[20%] rounded-full border border-blue-400/50 bg-[#06182c] px-4 py-2 text-sm">
-                <Users size={18} className="inline text-cyan-400 mr-2" />
+
+              {/* Influencers Node Badge */}
+              <div className="absolute right-[4%] top-[20%] z-30 flex items-center gap-2.5 rounded-full border border-blue-400/70 bg-[#06182c]/95 px-4.5 py-2.5 text-xs font-semibold backdrop-blur-xl shadow-[0_0_25px_rgba(0,140,255,0.4)]">
+                <Users size={16} className="text-cyan-400" />
                 Influencers
+              </div>
+
+              {/* Bottom Core Hub Tag */}
+              <div className="absolute bottom-[6%] inset-x-0 mx-auto w-max z-30 flex flex-col items-center rounded-2xl border border-blue-400/60 bg-[#031124]/95 px-7 py-3 text-center backdrop-blur-xl shadow-[0_0_30px_rgba(0,130,255,0.4)]">
+                <span className="text-sm font-bold text-white tracking-widest">InfluxBridge</span>
+                <span className="text-[11px] text-cyan-300 font-medium tracking-wide mt-0.5">The Connection</span>
               </div>
             </div>
 
+            {/* Right Side Steps */}
             <div className="lg:col-span-7">
               <TextReveal>
                 <SmallBadge>HOW IT WORKS</SmallBadge>
@@ -461,7 +480,7 @@ export default function Home() {
                 ].map(([number, title, text], index) => (
                   <TextReveal key={number} delay={index * 100}>
                     <GradientBorder from="from-cyan-500/20" to="to-transparent">
-                      <div className="bg-[#02050f]/60 p-7 backdrop-blur-md h-full">
+                      <div className="bg-[#02050f]/60 p-7 backdrop-blur-md h-full transition hover:border-cyan-400/50">
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex h-9 w-9 items-center justify-center rounded-full border border-cyan-400 text-sm font-bold text-cyan-300 shadow-[0_0_12px_rgba(0,170,255,.3)]">
                             {number}
@@ -476,6 +495,7 @@ export default function Home() {
                 ))}
               </div>
             </div>
+
           </div>
         </div>
       </section>
@@ -523,8 +543,8 @@ export default function Home() {
       {/* CTA SECTION */}
       <section className="relative z-10 px-6 py-24 lg:px-12">
         <TextReveal>
-          <div className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[2.5rem] border border-blue-500/60 bg-[#02101e] px-10 py-20 shadow-[0_0_50px_rgba(0,128,255,.25)]">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_65%_120%,rgba(0,128,255,.42),transparent_50%)]" />
+          <div className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[2.5rem] border border-blue-500/60 bg-[#02101e] px-10 py-20 shadow-[0_0_60px_rgba(0,140,255,0.3)]">
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_65%_120%,rgba(0,128,255,.45),transparent_50%)]" />
             <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
               <div>
                 <SmallBadge>YOUR GROWTH PARTNER</SmallBadge>
@@ -537,7 +557,7 @@ export default function Home() {
               </div>
               <Link
                 href="/contact"
-                className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#08a9f8] to-[#9840f1] px-9 py-4 text-base font-bold shadow-[0_0_30px_rgba(0,130,255,.4)] transition hover:brightness-110 shrink-0"
+                className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#08a9f8] to-[#9840f1] px-9 py-4 text-base font-bold shadow-[0_0_35px_rgba(0,140,255,0.5)] transition-all hover:scale-105 hover:brightness-110 shrink-0"
               >
                 Contact Us
                 <ArrowRight size={16} />
@@ -547,8 +567,8 @@ export default function Home() {
         </TextReveal>
       </section>
 
-      {/* FOOTER (With rich deep background and shadow depth) */}
-      <footer className="relative z-10 border-t border-white/[0.08] bg-[#000206] shadow-[inset_0_30px_50px_rgba(0,0,0,0.9)]">
+      {/* FOOTER (With Rich Shady Depth & Luxury Vignette) */}
+      <footer className="relative z-10 border-t border-white/[0.08] bg-[#000104] shadow-[inset_0_40px_60px_rgba(0,0,0,0.95)]">
         <div className="mx-auto flex flex-col md:flex-row h-auto md:h-[120px] max-w-[1600px] items-center justify-between px-6 py-8 lg:px-12 gap-6">
           <Link href="/" className="flex items-center gap-3">
             <img
