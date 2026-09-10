@@ -8,7 +8,7 @@ import * as THREE from "three";
 /* ─────────────────────────────────────────────────────────────
    EARTH TEXTURE
 ───────────────────────────────────────────────────────────── */
-function makeEarthTexture(size = 1024): THREE.CanvasTexture {
+function makeEarthTexture(size = 512): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size / 2;
@@ -81,7 +81,7 @@ function makeEarthTexture(size = 1024): THREE.CanvasTexture {
     const cy = cyF * H;
     const rx = rxF * W;
     const ry = ryF * H;
-    const count = Math.floor(20 + Math.random() * 40);
+    const count = Math.floor(15 + Math.random() * 20);
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const r = Math.sqrt(Math.random());
@@ -157,7 +157,7 @@ function useScrollTracker() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   GLOW RING
+   GLOG RING
 ───────────────────────────────────────────────────────────── */
 function GlowRing({
   radius,
@@ -190,15 +190,15 @@ function GlowRing({
   return (
     <group ref={ref} rotation={rotation}>
       <mesh>
-        <torusGeometry args={[radius, tubeRadius, 32, 256]} />
+        <torusGeometry args={[radius, tubeRadius, 16, 128]} />
         <meshBasicMaterial color={color} transparent opacity={opacity} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
       <mesh>
-        <torusGeometry args={[radius, tubeRadius * 3.5, 16, 256]} />
+        <torusGeometry args={[radius, tubeRadius * 3.5, 12, 128]} />
         <meshBasicMaterial color={glowColor} transparent opacity={opacity * 0.18} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
       <mesh>
-        <torusGeometry args={[radius, tubeRadius * 7, 8, 256]} />
+        <torusGeometry args={[radius, tubeRadius * 7, 8, 96]} />
         <meshBasicMaterial color={glowColor} transparent opacity={opacity * 0.07} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
     </group>
@@ -238,15 +238,15 @@ function OrbitalSphere({
     <group rotation={orbitRotation}>
       <group ref={groupRef}>
         <mesh position={[radius, 0, 0]}>
-          <sphereGeometry args={[size, 16, 16]} />
+          <sphereGeometry args={[size, 12, 12]} />
           <meshBasicMaterial color="#ffffff" />
         </mesh>
         <mesh position={[radius, 0, 0]}>
-          <sphereGeometry args={[size * 2.5, 16, 16]} />
+          <sphereGeometry args={[size * 2.5, 12, 12]} />
           <meshBasicMaterial color={color} transparent opacity={0.35} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
         <mesh position={[radius, 0, 0]}>
-          <sphereGeometry args={[size * 5, 16, 16]} />
+          <sphereGeometry args={[size * 5, 12, 12]} />
           <meshBasicMaterial color={color} transparent opacity={0.1} blending={THREE.AdditiveBlending} depthWrite={false} />
         </mesh>
       </group>
@@ -270,7 +270,7 @@ function NebulaCloud({
 }) {
   return (
     <mesh position={position}>
-      <sphereGeometry args={[scale, 8, 8]} />
+      <sphereGeometry args={[scale, 6, 6]} />
       <meshBasicMaterial color={color} transparent opacity={opacity} blending={THREE.AdditiveBlending} depthWrite={false} side={THREE.BackSide} />
     </mesh>
   );
@@ -289,7 +289,7 @@ function HoloPlanet() {
   const groupRotationX = useRef(0);
   const orbitRotation = useRef(0);
 
-  const earthTexture = useMemo(() => makeEarthTexture(2048), []);
+  const earthTexture = useMemo(() => makeEarthTexture(512), []);
 
   useFrame((_, delta) => {
     if (!planetGroup.current || !coreRef.current || !orbitsRef.current) return;
@@ -332,27 +332,27 @@ function HoloPlanet() {
   return (
     <group ref={planetGroup} position={[1.6, 0.3, 0]}>
       <mesh ref={coreRef}>
-        <sphereGeometry args={[PLANET_R, 128, 128]} />
+        <sphereGeometry args={[PLANET_R, 48, 48]} />
         <meshStandardMaterial map={earthTexture} roughness={0.65} metalness={0.05} emissive="#0a1a40" emissiveIntensity={0.3} />
       </mesh>
 
       <mesh>
-        <sphereGeometry args={[PLANET_R + 0.008, 36, 18]} />
+        <sphereGeometry args={[PLANET_R + 0.008, 24, 12]} />
         <meshBasicMaterial color="#1a50cc" wireframe transparent opacity={0.07} blending={THREE.AdditiveBlending} />
       </mesh>
 
       <mesh scale={1.04}>
-        <sphereGeometry args={[PLANET_R, 32, 32]} />
+        <sphereGeometry args={[PLANET_R, 24, 24]} />
         <meshBasicMaterial color="#1a5aff" transparent opacity={0.08} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
 
       <mesh scale={1.18}>
-        <sphereGeometry args={[PLANET_R, 32, 32]} />
+        <sphereGeometry args={[PLANET_R, 24, 24]} />
         <meshBasicMaterial color="#2255ee" transparent opacity={0.055} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
 
       <mesh scale={1.08}>
-        <sphereGeometry args={[PLANET_R, 32, 32]} />
+        <sphereGeometry args={[PLANET_R, 24, 24]} />
         <meshBasicMaterial color="#60a5fa" transparent opacity={0.04} side={THREE.BackSide} blending={THREE.AdditiveBlending} depthWrite={false} />
       </mesh>
 
@@ -387,8 +387,8 @@ function World() {
       <pointLight position={[0, 0, 5]} intensity={10} distance={12} color="#22d3ee" />
       <pointLight position={[0, -5, 2]} intensity={4} distance={10} color="#1a3aff" />
 
-      <Stars radius={90} depth={50} count={5000} factor={3.5} saturation={0.6} fade speed={0.35} />
-      <Sparkles count={300} scale={[20, 14, 10]} size={1.2} speed={0.15} opacity={0.25} color="#88bbff" />
+      <Stars radius={90} depth={50} count={1500} factor={3.5} saturation={0.6} fade speed={0.35} />
+      <Sparkles count={100} scale={[20, 14, 10]} size={1.2} speed={0.15} opacity={0.25} color="#88bbff" />
 
       <NebulaCloud position={[-7, 2, -8]} scale={5} color="#0a1a6a" opacity={0.18} />
       <NebulaCloud position={[7, -1, -9]} scale={4} color="#0a0a40" opacity={0.14} />
@@ -410,9 +410,9 @@ export default function ScrollWorld() {
     <div className="pointer-events-none fixed inset-0 z-[1]">
       <Canvas
         camera={{ position: [0, 0.5, 9], fov: 42 }}
-        dpr={[1, 2]}
+        dpr={[1, 1.5]}
         gl={{
-          antialias: true,
+          antialias: false,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
