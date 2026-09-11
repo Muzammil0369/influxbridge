@@ -12,8 +12,6 @@ import {
   Mail,
   Sparkles,
   Users,
-  Megaphone,
-  TrendingUp,
 } from "lucide-react";
 
 type Role = "company" | "influencer";
@@ -71,47 +69,46 @@ export default function LoginPage() {
         <div className="mx-auto grid w-full max-w-7xl items-center gap-16 lg:grid-cols-[1.2fr_480px]">
 
           {/* ═══════════════════════════════════════════
-             LEFT SIDE — Copy + Floating Earth
+              LEFT SIDE — Copy + Floating Earth (Visible on all sizes, optimized for mobile)
           ═══════════════════════════════════════════ */}
-          <div className="hidden lg:block">
+          <div className="text-center lg:text-left">
             <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-cyan-400/30 bg-[#031529]/90 px-4 py-1.5 text-xs text-cyan-300 backdrop-blur-md shadow-[0_0_20px_rgba(0,170,255,0.2)]">
               <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
               The bridge to Pakistan&apos;s digital market
             </div>
 
-            <h1 className="max-w-2xl text-5xl font-light leading-[1.05] tracking-[-0.04em] xl:text-6xl text-white">
+            <h1 className="max-w-2xl text-3xl sm:text-5xl font-light leading-[1.05] tracking-[-0.04em] xl:text-6xl text-white mx-auto lg:mx-0">
               Where global brands meet{" "}
               <span className="bg-gradient-to-r from-[#16b5ff] via-[#168dff] to-[#a044ff] bg-clip-text font-semibold text-transparent drop-shadow-[0_0_30px_rgba(0,150,255,0.4)]">
                 local influence.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-base leading-relaxed text-blue-100/80">
+            <p className="mt-6 max-w-xl text-sm sm:text-base leading-relaxed text-blue-100/80 mx-auto lg:mx-0">
               Access your InfluxBridge workspace and manage campaigns,
               partnerships, creators and market growth from one place.
             </p>
 
             {/* ── Floating Earth with orbital badges ── */}
-            <div className="relative mx-auto mt-4 flex h-[560px] w-full max-w-[600px] items-center justify-center">
-  {/* Ambient glow layers behind the Earth */}
-  <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-    <div className="h-[420px] w-[420px] rounded-full bg-[#0080ff]/30 blur-[130px]" />
-    <div className="absolute h-[280px] w-[280px] rounded-full bg-[#00d0ff]/20 blur-[90px]" />
-    <div className="absolute h-[160px] w-[160px] rounded-full bg-[#7ceaff]/15 blur-[60px]" />
-  </div>
+            <div className="relative mx-auto mt-6 flex h-[360px] sm:h-[560px] w-full max-w-[600px] items-center justify-center">
+              {/* Ambient glow layers behind the Earth */}
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-[300px] w-[300px] sm:h-[420px] sm:w-[420px] rounded-full bg-[#0080ff]/30 blur-[130px]" />
+                <div className="absolute h-[200px] w-[200px] sm:h-[280px] sm:w-[280px] rounded-full bg-[#00d0ff]/20 blur-[90px]" />
+              </div>
 
-  {/* The Earth image — pure, no overlays */}
-  <img
-    src="/login-earth.png"
-    alt="InfluxBridge Network"
-    className="relative z-10 h-[520px] w-[520px] select-none object-contain drop-shadow-[0_0_80px_rgba(0,140,255,0.7)]"
-    draggable={false}
-  />
-</div>
+              {/* The Earth image */}
+              <img
+                src="/login-earth.png"
+                alt="InfluxBridge Network"
+                className="relative z-10 h-[320px] w-[320px] sm:h-[520px] sm:w-[520px] select-none object-contain drop-shadow-[0_0_80px_rgba(0,140,255,0.7)]"
+                draggable={false}
+              />
+            </div>
           </div>
 
           {/* ═══════════════════════════════════════════
-             RIGHT SIDE — Login Card
+              RIGHT SIDE — Login Card
           ═══════════════════════════════════════════ */}
           <div className="relative">
             <div className="absolute -inset-4 rounded-[32px] bg-gradient-to-r from-blue-500/10 via-indigo-500/5 to-purple-500/10 blur-2xl" />
@@ -298,10 +295,10 @@ export default function LoginPage() {
                       Don&apos;t have an account?
                     </span>{" "}
                     <Link
-                      href="/contact"
+                      href={role === "company" ? "/contact" : "/join/influencer"}
                       className="text-sm font-semibold text-cyan-400 transition hover:text-cyan-300"
                     >
-                      Get started
+                      {role === "company" ? "Start a Campaign" : "Join the Network"}
                     </Link>
                   </div>
                 </>
