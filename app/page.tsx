@@ -183,7 +183,7 @@ export default function Home() {
                 </p>
               </TextReveal>
               <TextReveal delay={300}>
-                <Links
+                <Link
   href="/services"
   className="mt-8 inline-flex items-center gap-2 rounded-full border px-7 py-3.5 text-sm font-semibold transition-all hover:bg-cyan-500/10 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)]"
   style={{
@@ -193,7 +193,7 @@ export default function Home() {
 >
   Explore All Services
   <ArrowRight size={14} />
-</Links>
+</Link>
               </TextReveal>
             </div>
 
