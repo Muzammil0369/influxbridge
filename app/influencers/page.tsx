@@ -31,18 +31,19 @@ type Influencer = {
   initials: string;
   featured?: boolean;
   gradient: string;
+  image: string;  
 };
 
 const influencers: Influencer[] = [
-  { name: "Ahmed Khan", slug: "ahmed-khan", category: "Crypto", platform: "YouTube", followers: "125K", followersNum: 125000, engagement: "4.8%", location: "Pakistan", description: "Crypto educator and market commentator focused on digital assets and Web3.", initials: "AK", featured: true, gradient: "from-blue-500 to-cyan-500" },
-  { name: "Hamza Malik", slug: "hamza-malik", category: "Forex", platform: "Instagram", followers: "82K", followersNum: 82000, engagement: "6.2%", location: "Pakistan", description: "Forex and trading creator producing educational market content.", initials: "HM", featured: true, gradient: "from-purple-500 to-pink-500" },
-  { name: "Usman Tariq", slug: "usman-tariq", category: "Finance", platform: "YouTube", followers: "210K", followersNum: 210000, engagement: "3.9%", location: "Pakistan", description: "Personal finance and investment creator with a broad business audience.", initials: "UT", gradient: "from-emerald-500 to-teal-500" },
-  { name: "Bilal Ahmed", slug: "bilal-ahmed", category: "Trading", platform: "X", followers: "64K", followersNum: 64000, engagement: "7.1%", location: "Pakistan", description: "Trading-focused creator covering markets, technical analysis, and strategy.", initials: "BA", gradient: "from-orange-500 to-red-500" },
-  { name: "Saad Raza", slug: "saad-raza", category: "Crypto", platform: "X", followers: "156K", followersNum: 156000, engagement: "5.4%", location: "Pakistan", description: "Crypto market analyst and community creator covering Web3 trends.", initials: "SR", gradient: "from-cyan-500 to-blue-500" },
-  { name: "Ali Hassan", slug: "ali-hassan", category: "Finance", platform: "Instagram", followers: "91K", followersNum: 91000, engagement: "5.8%", location: "Pakistan", description: "Finance creator focused on financial education and digital products.", initials: "AH", gradient: "from-indigo-500 to-purple-500" },
-  { name: "Fahad Shah", slug: "fahad-shah", category: "Web3", platform: "YouTube", followers: "73K", followersNum: 73000, engagement: "6.6%", location: "Pakistan", description: "Web3 creator explaining blockchain technology and emerging ecosystems.", initials: "FS", gradient: "from-violet-500 to-fuchsia-500" },
-  { name: "Owais Khan", slug: "owais-khan", category: "Trading", platform: "Instagram", followers: "118K", followersNum: 118000, engagement: "4.5%", location: "Pakistan", description: "Trading and financial markets creator with an active retail audience.", initials: "OK", gradient: "from-amber-500 to-orange-500" },
-  { name: "Zain Malik", slug: "zain-malik", category: "Crypto", platform: "TikTok", followers: "245K", followersNum: 245000, engagement: "8.2%", location: "Pakistan", description: "Short-form crypto creator reaching a highly engaged younger audience.", initials: "ZM", gradient: "from-rose-500 to-pink-500" },
+  { name: "Ahmed Khan", slug: "ahmed-khan", category: "Crypto", platform: "YouTube", followers: "125K", followersNum: 125000, engagement: "4.8%", location: "Pakistan", description: "Crypto educator and market commentator focused on digital assets and Web3.", initials: "AK", featured: true, gradient: "from-blue-500 to-cyan-500", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80" },
+  { name: "Hamza Malik", slug: "hamza-malik", category: "Forex", platform: "Instagram", followers: "82K", followersNum: 82000, engagement: "6.2%", location: "Pakistan", description: "Forex and trading creator producing educational market content.", initials: "HM", featured: true, gradient: "from-purple-500 to-pink-500", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80" },
+  { name: "Usman Tariq", slug: "usman-tariq", category: "Finance", platform: "YouTube", followers: "210K", followersNum: 210000, engagement: "3.9%", location: "Pakistan", description: "Personal finance and investment creator with a broad business audience.", initials: "UT", gradient: "from-emerald-500 to-teal-500", image: "https://images.unsplash.com/photo-1531427186611-ecfd6d936c79?auto=format&fit=crop&w=200&q=80" },
+  { name: "Bilal Ahmed", slug: "bilal-ahmed", category: "Trading", platform: "X", followers: "64K", followersNum: 64000, engagement: "7.1%", location: "Pakistan", description: "Trading-focused creator covering markets, technical analysis, and strategy.", initials: "BA", gradient: "from-orange-500 to-red-500", image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=200&q=80" },
+  { name: "Saad Raza", slug: "saad-raza", category: "Crypto", platform: "X", followers: "156K", followersNum: 156000, engagement: "5.4%", location: "Pakistan", description: "Crypto market analyst and community creator covering Web3 trends.", initials: "SR", gradient: "from-cyan-500 to-blue-500", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=200&q=80" },
+  { name: "Ali Hassan", slug: "ali-hassan", category: "Finance", platform: "Instagram", followers: "91K", followersNum: 91000, engagement: "5.8%", location: "Pakistan", description: "Finance creator focused on financial education and digital products.", initials: "AH", gradient: "from-indigo-500 to-purple-500", image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=200&q=80" },
+  { name: "Fahad Shah", slug: "fahad-shah", category: "Web3", platform: "YouTube", followers: "73K", followersNum: 73000, engagement: "6.6%", location: "Pakistan", description: "Web3 creator explaining blockchain technology and emerging ecosystems.", initials: "FS", gradient: "from-violet-500 to-fuchsia-500", image: "https://images.unsplash.com/photo-1560250097-0b93528c311a?auto=format&fit=crop&w=200&q=80" },
+  { name: "Owais Khan", slug: "owais-khan", category: "Trading", platform: "Instagram", followers: "118K", followersNum: 118000, engagement: "4.5%", location: "Pakistan", description: "Trading and financial markets creator with an active retail audience.", initials: "OK", gradient: "from-amber-500 to-orange-500", image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=200&q=80" },
+  { name: "Zain Malik", slug: "zain-malik", category: "Crypto", platform: "TikTok", followers: "245K", followersNum: 245000, engagement: "8.2%", location: "Pakistan", description: "Short-form crypto creator reaching a highly engaged younger audience.", initials: "ZM", gradient: "from-rose-500 to-pink-500", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80" },
 ];
 
 const categories = ["All", "Crypto", "Forex", "Finance", "Trading", "Web3"];
@@ -139,20 +140,32 @@ export default function InfluencersPage() {
                       </div>
 
                       <div className="scrollbar-hide mt-4 flex gap-2 overflow-x-auto">
-                        {categories.map((c) => (
-                          <button
-                            key={c}
-                            onClick={() => setCategory(c)}
-                            className={`shrink-0 rounded-full px-3.5 py-1.5 text-[11px] font-medium transition ${
-                              category === c
-                                ? "bg-cyan-500/20 text-cyan-300 ring-1 ring-cyan-400/40"
-                                : "border border-white/10 bg-white/[0.02] text-white/50 hover:bg-white/[0.06] hover:text-white"
-                            }`}
-                          >
-                            {c}
-                          </button>
-                        ))}
-                      </div>
+  {categories.map((c) => {
+    const active = category === c;
+    return (
+      <button
+        key={c}
+        onClick={() => setCategory(c)}
+        className={`shrink-0 rounded-full border px-3.5 py-1.5 text-[11px] font-medium transition ${
+          active
+            ? "bg-cyan-500/20"
+            : "bg-white/[0.02] hover:bg-white/[0.06]"
+        }`}
+        style={{
+          borderColor: active
+            ? "rgba(34, 211, 238, 0.6)"
+            : "rgba(255, 255, 255, 0.1)",
+          color: active ? "#67e8f9" : "rgba(255, 255, 255, 0.5)",
+          boxShadow: active
+            ? "0 0 0 1px rgba(34, 211, 238, 0.4), 0 0 12px rgba(34, 211, 238, 0.15)"
+            : "none",
+        }}
+      >
+        {c}
+      </button>
+    );
+  })}
+</div>
                     </div>
 
                     <div className="flex-1 overflow-y-auto">
@@ -177,10 +190,23 @@ export default function InfluencersPage() {
                               }`}
                             >
                               <div
-                                className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br ${i.gradient} text-xs font-bold shadow-lg`}
-                              >
-                                {i.initials}
-                              </div>
+  className={`relative h-11 w-11 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br ${i.gradient} shadow-lg`}
+>
+  {/* Fallback: initials behind the image */}
+  <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-white">
+    {i.initials}
+  </span>
+  {/* Real image on top */}
+  <img
+    src={i.image}
+    alt={i.name}
+    className="relative h-full w-full object-cover"
+    loading="lazy"
+    onError={(e) => {
+      e.currentTarget.style.display = "none";
+    }}
+  />
+</div>
                               <div className="min-w-0 flex-1">
                                 <div className="flex items-center gap-1.5">
                                   <span className={`truncate text-sm font-medium ${active ? 'text-white' : 'text-white/80'}`}>
@@ -214,10 +240,22 @@ export default function InfluencersPage() {
                     <div className="relative">
                       <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center">
                         <div
-                          className={`flex h-24 w-24 shrink-0 items-center justify-center rounded-[2rem] bg-gradient-to-br ${selected.gradient} text-3xl font-bold shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-500`}
-                        >
-                          {selected.initials}
-                        </div>
+  className={`relative h-24 w-24 shrink-0 overflow-hidden rounded-[2rem] bg-gradient-to-br ${selected.gradient} shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-500`}
+>
+  {/* Fallback initials */}
+  <span className="absolute inset-0 flex items-center justify-center text-3xl font-bold text-white">
+    {selected.initials}
+  </span>
+  {/* Image */}
+  <img
+    src={selected.image}
+    alt={selected.name}
+    className="relative h-full w-full object-cover"
+    onError={(e) => {
+      e.currentTarget.style.display = "none";
+    }}
+  />
+</div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h2 className="text-4xl font-light tracking-tight">

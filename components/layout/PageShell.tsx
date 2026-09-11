@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ArrowRight, Command, Network, Search, X } from "lucide-react";
+import { ArrowRight, Search, X, Command, Network } from "lucide-react";
 import ScrollWorldLoader from "@/components/three/ScrollWorldLoader";
 
 const navLinks = [
@@ -12,21 +12,12 @@ const navLinks = [
   { href: "/influencers", label: "Influencers" },
   { href: "/case-studies", label: "Case Studies" },
   { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ];
 
-export function CommandPalette({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+export function CommandPalette({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [query, setQuery] = useState("");
-
-  const filtered = navLinks.filter((l) =>
-    l.label.toLowerCase().includes(query.toLowerCase())
-  );
-
+  const filtered = navLinks.filter((l) => l.label.toLowerCase().includes(query.toLowerCase()));
   if (!open) return null;
 
   return (
@@ -47,10 +38,7 @@ export function CommandPalette({
             placeholder="Jump to..."
             className="flex-1 bg-transparent text-sm text-white outline-none placeholder:text-white/30"
           />
-          <button
-            onClick={onClose}
-            className="rounded p-1 text-white/30 hover:bg-white/5 hover:text-white"
-          >
+          <button onClick={onClose} className="rounded p-1 text-white/30 hover:bg-white/5 hover:text-white">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -66,11 +54,6 @@ export function CommandPalette({
               <ArrowRight className="h-3.5 w-3.5 text-white/30" />
             </Link>
           ))}
-          {filtered.length === 0 && (
-            <div className="px-3 py-6 text-center text-sm text-white/30">
-              No results
-            </div>
-          )}
         </div>
       </div>
     </div>
@@ -103,68 +86,84 @@ export function Navbar() {
 
   return (
     <>
-      <nav
-        className={`fixed left-0 right-0 top-0 z-50 transition-all duration-500 ${
-          scrolled
-            ? "border-b border-white/[0.06] bg-[#02050f]/85 backdrop-blur-xl"
-            : "border-b border-transparent bg-[#02050f]/60 backdrop-blur-md"
-        }`}
+      <header
+        className={`
+          fixed left-0 right-0 top-0 z-50
+          transition-all duration-300
+          ${
+            scrolled
+              ? "border-b border-white/[0.05] bg-[#01050c]/85 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.8)]"
+              : "bg-transparent"
+          }
+        `}
       >
-        <div className="mx-auto flex h-16 max-w-[1600px] items-center justify-between px-6 lg:px-12">
-          <Link href="/" className="group flex items-center gap-2.5">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-cyan-400 to-blue-600">
-              <Network className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-base font-semibold tracking-tight">
-              Influx<span className="text-cyan-400">Bridge</span>
+        <div className="relative mx-auto flex h-[80px] max-w-[1600px] items-center justify-between px-6 lg:px-12">
+          {/* LEFT — Logo (normal flow) */}
+          <Link href="/" className="flex shrink-0 items-center gap-3">
+            <img
+              src="/a-logo.png"
+              alt="InfluxBridge"
+              className="h-9 w-9 object-contain drop-shadow-[0_0_10px_rgba(0,180,255,0.8)]"
+            />
+            <span className="text-lg font-bold tracking-[-0.04em]">
+              Influx<span className="text-[#16a8ff]">Bridge</span>
             </span>
           </Link>
 
-          <div className="hidden items-center gap-1 md:flex">
-            {navLinks.map((link) => {
+          {/* CENTER — Nav links (absolutely centered) */}
+          <nav className="pointer-events-auto absolute left-1/2 hidden -translate-x-1/2 items-center gap-9 lg:flex">
+            {navLinks.map((item) => {
               const active =
-                link.href === "/"
-                  ? pathname === "/"
-                  : pathname.startsWith(link.href);
+                item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
               return (
                 <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`relative rounded-lg px-3.5 py-2 text-[13px] font-medium transition ${
-                    active ? "text-white" : "text-white/50 hover:text-white"
-                  }`}
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    relative
+                    py-5
+                    text-sm
+                    font-medium
+                    transition-colors
+                    ${active ? "text-[#27b8ff]" : "text-white/60 hover:text-white"}
+                  `}
                 >
-                  {link.label}
+                  {item.label}
                   {active && (
-                    <span className="absolute inset-x-3 -bottom-px h-px bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+                    <span className="absolute bottom-[11px] left-0 right-0 mx-auto h-[2px] rounded-full bg-[#00aaff] shadow-[0_0_12px_#00aaff]" />
                   )}
                 </Link>
               );
             })}
-          </div>
+          </nav>
 
-          <div className="flex items-center gap-2">
+          {/* RIGHT — Search + Login + CTA (normal flow) */}
+          <div className="ml-auto flex shrink-0 items-center gap-4">
             <button
               onClick={() => setPaletteOpen(true)}
-              className="hidden items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-1.5 text-xs text-white/40 transition hover:border-white/20 hover:text-white/70 md:flex"
+              className="text-white/70 transition hover:text-white"
+              aria-label="Search"
             >
-              <Search className="h-3 w-3" />
-              <span>Search</span>
-              <kbd className="ml-3 flex items-center gap-0.5 rounded bg-white/10 px-1.5 py-0.5 text-[10px] font-medium">
-                <Command className="h-2.5 w-2.5" />K
-              </kbd>
+              <Search size={18} strokeWidth={1.5} />
             </button>
 
             <Link
-              href="/contact"
-              className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-blue-600 to-cyan-400 px-4 py-2 text-[13px] font-semibold text-white transition hover:brightness-110"
+              href="/login"
+              className="hidden rounded-full border border-blue-400/70 px-6 py-2.5 text-xs transition-all hover:bg-white/[0.08] hover:shadow-[0_0_15px_rgba(0,140,255,0.3)] sm:block"
             >
-              Start Campaign
-              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+              Login
+            </Link>
+
+            <Link
+              href="/contact"
+              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#079cf4] to-[#9a3df4] px-7 py-3 text-xs font-semibold shadow-[0_0_22px_rgba(75,90,255,.35)] transition-all hover:scale-105 hover:brightness-110"
+            >
+              Start a Campaign
+              <ArrowRight size={13} />
             </Link>
           </div>
         </div>
-      </nav>
+      </header>
 
       <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} />
     </>
@@ -173,31 +172,30 @@ export function Navbar() {
 
 export function Footer() {
   return (
-    <footer className="relative z-10 border-t border-white/[0.06] bg-[#02040a]/80 px-6 py-10 backdrop-blur-xl lg:px-12">
-      <div className="mx-auto flex max-w-[1600px] flex-col items-center justify-between gap-6 sm:flex-row">
-        <Link href="/" className="flex items-center gap-2">
-          <Network className="h-4 w-4 text-cyan-400" />
-          <span className="text-sm font-semibold">
+    <footer className="relative z-10 border-t border-white/[0.08] bg-[#000104]/95 backdrop-blur-md shadow-[inset_0_40px_60px_rgba(0,0,0,0.95)]">
+      <div className="mx-auto flex flex-col md:flex-row h-auto md:h-[120px] max-w-[1600px] items-center justify-between px-6 py-8 lg:px-12 gap-6">
+        <Link href="/" className="flex items-center gap-3">
+          <img src="/a-logo.png" alt="InfluxBridge" className="h-8 w-8 object-contain" />
+          <span className="text-lg font-bold">
             Influx<span className="text-cyan-400">Bridge</span>
           </span>
         </Link>
 
-        <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-[12px] text-white/40">
-          {navLinks.map((l) => (
+        <nav className="flex items-center gap-9 flex-wrap justify-center">
+          {navLinks.map((item) => (
             <Link
-              key={l.href}
-              href={l.href}
-              className="transition hover:text-white"
+              key={item.href}
+              href={item.href}
+              className="text-sm text-white/70 transition hover:text-white"
             >
-              {l.label}
+              {item.label}
             </Link>
           ))}
-          <Link href="/contact" className="transition hover:text-white">
-            Contact
-          </Link>
-        </div>
+        </nav>
 
-        <div className="text-[11px] text-white/25">© 2026 InfluxBridge</div>
+        <div className="text-xs text-white/40">
+          © 2026 InfluxBridge. All rights reserved.
+        </div>
       </div>
     </footer>
   );
@@ -205,14 +203,9 @@ export function Footer() {
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative min-h-screen overflow-x-hidden text-white">
-      {/* Solid atmosphere — sits BEHIND the 3D canvas */}
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[#02050f]">
-        <div className="absolute left-1/2 top-[-400px] h-[800px] w-[800px] -translate-x-1/2 rounded-full bg-blue-600/[0.08] blur-[140px]" />
-        <div className="absolute bottom-[-300px] right-[-200px] h-[600px] w-[600px] rounded-full bg-purple-600/[0.06] blur-[140px]" />
-      </div>
+    <main className="relative min-h-screen overflow-x-hidden bg-[#01050c] text-white">
+      <div className="pointer-events-none fixed inset-0 -z-20 bg-[#01050c]" />
 
-      {/* 🌍 THE WORLD — renders on every page using PageShell */}
       <ScrollWorldLoader />
 
       <Navbar />

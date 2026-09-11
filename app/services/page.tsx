@@ -40,11 +40,10 @@ const process = [
 export default function ServicesPage() {
   return (
     <PageShell>
-      {/* 3D BACKGROUND CONTAINER - Locked behind the content */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <ScrollWorldLoader />
-      </div>
-
+  <div className="pointer-events-none fixed inset-0 -z-10">
+    <ScrollWorldLoader />
+  </div>
+    
       {/* CONTENT CONTAINER - Sits on top of the 3D world */}
       <div className="relative z-10">
         {/* ═══════════ HERO ═══════════ */}

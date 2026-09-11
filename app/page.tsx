@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { PageShell } from "@/components/layout/PageShell";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -13,7 +13,6 @@ import {
   Globe2,
   MessageCircle,
 } from "lucide-react";
-import ScrollWorldLoader from "@/components/three/ScrollWorldLoader";
 import { GradientBorder } from "@/components/ui/GradientBorder";
 import { TextReveal } from "@/components/ui/TextReveal";
 
@@ -45,211 +44,34 @@ const Instagram = (props: any) => (
   </svg>
 );
 
-const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Services", href: "/services" },
-  { label: "Influencers", href: "/influencers" },
-  { label: "Case Studies", href: "/case-studies" },
-  { label: "About", href: "/about" },
-  { label: "Contact", href: "/contact" },
-];
-
 const creators = [
-  {
-    name: "CryptoWithAli",
-    category: "Crypto / Trading",
-    followers: "245K",
-    engagement: "4.8%",
-    image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "Web3 Queen",
-    category: "Web3 / DeFi",
-    followers: "182K",
-    engagement: "5.4%",
-    image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "TechWithHamza",
-    category: "Blockchain / Tech",
-    followers: "420K",
-    engagement: "6.1%",
-    image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "NFT Explorer",
-    category: "NFTs / Gaming",
-    followers: "310K",
-    engagement: "5.2%",
-    image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "SatoshiTrader",
-    category: "Crypto / Futures",
-    followers: "512K",
-    engagement: "7.0%",
-    image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "DeFiSophia",
-    category: "Yield Farming / Web3",
-    followers: "195K",
-    engagement: "4.9%",
-    image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "MetaverseMaven",
-    category: "Virtual Worlds / NFT",
-    followers: "280K",
-    engagement: "5.8%",
-    image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80",
-  },
-  {
-    name: "AlphaZayn",
-    category: "Altcoins / Analysis",
-    followers: "340K",
-    engagement: "6.3%",
-    image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80",
-  },
+  { name: "CryptoWithAli", category: "Crypto / Trading", followers: "245K", engagement: "4.8%", image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" },
+  { name: "Web3 Queen", category: "Web3 / DeFi", followers: "182K", engagement: "5.4%", image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=300&q=80" },
+  { name: "TechWithHamza", category: "Blockchain / Tech", followers: "420K", engagement: "6.1%", image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" },
+  { name: "NFT Explorer", category: "NFTs / Gaming", followers: "310K", engagement: "5.2%", image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80" },
+  { name: "SatoshiTrader", category: "Crypto / Futures", followers: "512K", engagement: "7.0%", image: "https://images.unsplash.com/photo-1492562080023-ab3db95bfbce?auto=format&fit=crop&w=300&q=80" },
+  { name: "DeFiSophia", category: "Yield Farming / Web3", followers: "195K", engagement: "4.9%", image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" },
+  { name: "MetaverseMaven", category: "Virtual Worlds / NFT", followers: "280K", engagement: "5.8%", image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=300&q=80" },
+  { name: "AlphaZayn", category: "Altcoins / Analysis", followers: "340K", engagement: "6.3%", image: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80" },
 ];
 
 const services = [
-  {
-    icon: Globe2,
-    title: "Market Entry",
-    text: "Launch in new markets with local creators and community support.",
-  },
-  {
-    icon: Users,
-    title: "Influencer Network",
-    text: "Access verified creators across crypto, Web3, trading and tech.",
-  },
-  {
-    icon: BarChart3,
-    title: "Campaign Management",
-    text: "We handle everything from selection to reporting and optimization.",
-  },
-  {
-    icon: Layers3,
-    title: "Growth Infrastructure",
-    text: "Data-driven strategies, performance tracking and real results.",
-  },
+  { icon: Globe2, title: "Market Entry", text: "Launch in new markets with local creators and community support." },
+  { icon: Users, title: "Influencer Network", text: "Access verified creators across crypto, Web3, trading and tech." },
+  { icon: BarChart3, title: "Campaign Management", text: "We handle everything from selection to reporting and optimization." },
+  { icon: Layers3, title: "Growth Infrastructure", text: "Data-driven strategies, performance tracking and real results." },
 ];
 
 const caseStudies = [
-  {
-    title: "ChainVerse",
-    result: "+280% Community Growth",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    title: "MetaLedger",
-    result: "+540% Engagement",
-    image: "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    title: "NovaSwap",
-    result: "+320% Brand Awareness",
-    image: "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?auto=format&fit=crop&w=600&q=80",
-  },
-  {
-    title: "OrbitChain",
-    result: "+210% User Signups",
-    image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=600&q=80",
-  },
+  { title: "ChainVerse", result: "+280% Community Growth", image: "https://images.unsplash.com/photo-1639762681485-074b7f938ba0?auto=format&fit=crop&w=800&q=80" },
+  { title: "MetaLedger", result: "+540% Engagement", image: "https://images.unsplash.com/photo-1621504450181-5d356f61d307?auto=format&fit=crop&w=800&q=80" },
+  { title: "NovaSwap", result: "+320% Brand Awareness", image: "https://images.unsplash.com/photo-1639762681057-408e52192e55?auto=format&fit=crop&w=800&q=80" },
+  { title: "OrbitChain", result: "+210% User Signups", image: "https://images.unsplash.com/photo-1642104704074-907c0698cbd9?auto=format&fit=crop&w=800&q=80" },
 ];
 
 export default function Home() {
-  const [activeNav, setActiveNav] = useState("Home");
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
-
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#01050c] text-white">
-      {/* 3D BACKGROUND WORLD */}
-      <div className="fixed inset-0 z-0 pointer-events-none">
-        <ScrollWorldLoader />
-      </div>
-
-      {/* NAVBAR */}
-      <header
-        className={`
-          fixed left-0 right-0 top-0 z-50
-          transition-all duration-300
-          ${
-            scrolled
-              ? "border-b border-white/[0.05] bg-[#01050c]/90 backdrop-blur-xl"
-              : "bg-transparent"
-          }
-        `}
-      >
-        <div className="mx-auto flex h-[80px] max-w-[1600px] items-center px-6 lg:px-12">
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/a-logo.png"
-              alt="InfluxBridge"
-              className="h-9 w-9 object-contain"
-            />
-            <span className="text-lg font-bold tracking-[-0.04em]">
-              Influx<span className="text-[#16a8ff]">Bridge</span>
-            </span>
-          </Link>
-
-          <nav className="ml-16 hidden items-center gap-9 lg:flex">
-            {NAV_LINKS.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => setActiveNav(item.label)}
-                className={`
-                  relative
-                  py-5
-                  text-sm
-                  font-medium
-                  transition-colors
-                  ${
-                    activeNav === item.label
-                      ? "text-[#27b8ff]"
-                      : "text-white/60 hover:text-white"
-                  }
-                `}
-              >
-                {item.label}
-                {activeNav === item.label && (
-                  <span className="absolute bottom-[11px] left-0 right-0 mx-auto h-[2px] rounded-full bg-[#00aaff] shadow-[0_0_10px_#00aaff]" />
-                )}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="ml-auto flex items-center gap-4">
-            <Search
-              size={18}
-              strokeWidth={1.5}
-              className="mr-2 text-white/70"
-            />
-            <Link
-              href="/login"
-              className="hidden rounded-full border border-blue-400/70 px-6 py-2.5 text-xs transition hover:bg-white/[0.08] sm:block"
-            >
-              Login
-            </Link>
-            <Link
-              href="/contact"
-              className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#079cf4] to-[#9a3df4] px-7 py-3 text-xs font-semibold shadow-[0_0_22px_rgba(75,90,255,.3)] transition hover:brightness-110"
-            >
-              Start a Campaign
-              <ArrowRight size={13} />
-            </Link>
-          </div>
-        </div>
-      </header>
-
+    <PageShell>
       {/* HERO SECTION */}
       <section className="relative z-10 flex min-h-[95vh] items-center px-6 pt-36 pb-16 lg:px-12">
         <div
@@ -257,7 +79,7 @@ export default function Home() {
           style={{
             width: "55%",
             background:
-              "linear-gradient(to right, rgba(1,5,12,0.98) 0%, rgba(1,5,12,0.85) 60%, rgba(1,5,12,0.3) 85%, rgba(1,5,12,0) 100%)",
+              "linear-gradient(to right, rgba(1,5,12,0.95) 0%, rgba(1,5,12,0.75) 60%, rgba(1,5,12,0.2) 85%, rgba(1,5,12,0) 100%)",
           }}
         />
 
@@ -267,7 +89,7 @@ export default function Home() {
               <TextReveal>
                 <div className="mb-6 inline-flex rounded-full border border-[#00aaff]/40 bg-[#031426]/80 px-4 py-1.5 backdrop-blur-md shadow-[0_0_20px_rgba(0,170,255,0.2)]">
                   <span className="text-[11px] font-bold uppercase tracking-[.18em] text-[#20c4ff]">
-                    Web3 Growth Infrastructure
+                    WEB3 GROWTH INFRASTRUCTURE
                   </span>
                 </div>
               </TextReveal>
@@ -331,7 +153,7 @@ export default function Home() {
       </section>
 
       {/* STATS */}
-      <section className="relative z-10 border-y border-blue-500/20 bg-[#020914]/95 backdrop-blur-md py-6 shadow-[0_0_30px_rgba(0,100,255,0.1)]">
+      <section className="relative z-10 border-y border-blue-500/20 bg-[#020914]/90 backdrop-blur-md py-6 shadow-[0_0_30px_rgba(0,100,255,0.1)]">
         <div className="mx-auto flex max-w-[1400px] items-center justify-between px-6 py-6 lg:px-12">
           <Stat number="10K+" label="Community Reach" />
           <StatDivider />
@@ -344,14 +166,12 @@ export default function Home() {
       </section>
 
       {/* SERVICES */}
-      <section id="services" className="relative z-10 border-b border-white/[0.04] bg-[#010711]/80 py-28 backdrop-blur-sm">
+      <section id="services" className="relative z-10 border-b border-white/[0.04] bg-[#010711]/70 py-28 backdrop-blur-sm">
         <SectionGlow />
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
           <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
             <div className="lg:col-span-4">
-              <TextReveal>
-                <SmallBadge>OUR SERVICES</SmallBadge>
-              </TextReveal>
+              <TextReveal><SmallBadge>OUR SERVICES</SmallBadge></TextReveal>
               <TextReveal delay={100}>
                 <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
                   End-to-End Influencer Marketing for Web3 & Beyond.
@@ -363,13 +183,17 @@ export default function Home() {
                 </p>
               </TextReveal>
               <TextReveal delay={300}>
-                <Link
-                  href="/services"
-                  className="mt-8 inline-flex items-center gap-2 rounded-full border border-cyan-500/60 px-7 py-3.5 text-sm font-semibold text-cyan-300 transition-all hover:bg-cyan-500/10 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)]"
-                >
-                  Explore All Services
-                  <ArrowRight size={14} />
-                </Link>
+                <Links
+  href="/services"
+  className="mt-8 inline-flex items-center gap-2 rounded-full border px-7 py-3.5 text-sm font-semibold transition-all hover:bg-cyan-500/10 hover:shadow-[0_0_20px_rgba(0,200,255,0.3)]"
+  style={{
+    borderColor: "rgba(34, 211, 238, 0.55)",
+    color: "#67e8f9",
+  }}
+>
+  Explore All Services
+  <ArrowRight size={14} />
+</Links>
               </TextReveal>
             </div>
 
@@ -384,28 +208,37 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FEATURED CREATORS (Continuous Smooth Horizontal Infinite Scroll) */}
-      <section id="influencers" className="relative z-10 border-b border-white/[0.04] bg-[#01060e]/80 py-28 backdrop-blur-sm overflow-hidden">
-        <div className="mx-auto max-w-[1600px] px-6 lg:px-12 mb-12">
-          <TextReveal>
-            <SmallBadge>FEATURED CREATORS</SmallBadge>
-          </TextReveal>
-          <TextReveal delay={100}>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
-              Top Talent. Real Influence.
-            </h2>
-          </TextReveal>
-          <TextReveal delay={200}>
-            <p className="mt-3 max-w-xl text-base text-white/60">
-              Work with creators who understand Web3 and have the power to move communities authentically. Explore our expansive vetted roster below.
-            </p>
-          </TextReveal>
+      {/* FEATURED CREATORS */}
+      <section id="influencers" className="relative z-10 border-b border-white/[0.04] bg-[#01060e]/70 py-28 backdrop-blur-sm overflow-hidden">
+        <div className="mx-auto max-w-[1600px] px-6 lg:px-12 mb-12 flex flex-col md:flex-row md:items-end justify-between">
+          <div>
+            <TextReveal><SmallBadge>FEATURED CREATORS</SmallBadge></TextReveal>
+            <TextReveal delay={100}>
+              <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
+                Top Talent. Real Influence.
+              </h2>
+            </TextReveal>
+            <TextReveal delay={200}>
+              <p className="mt-3 max-w-xl text-base text-white/60">
+                Work with creators who understand Web3 and have the power to move communities authentically.
+              </p>
+            </TextReveal>
+          </div>
+          <div className="mt-6 md:mt-0">
+            <Link
+              href="/influencers"
+              className="inline-flex items-center gap-2 rounded-full border border-cyan-500/60 px-7 py-3.5 text-sm font-semibold text-cyan-300 transition hover:bg-cyan-500/10"
+            >
+              View All Influencers
+              <ArrowRight size={14} />
+            </Link>
+          </div>
         </div>
 
         <div className="relative w-full overflow-hidden py-4">
           <div className="absolute left-0 inset-y-0 w-32 bg-gradient-to-r from-[#01060e] to-transparent z-20 pointer-events-none" />
           <div className="absolute right-0 inset-y-0 w-32 bg-gradient-to-l from-[#01060e] to-transparent z-20 pointer-events-none" />
-          
+
           <div className="flex w-max animate-marquee gap-6 hover:[animation-play-state:paused]">
             {[...creators, ...creators].map((creator, idx) => (
               <div key={`${creator.name}-${idx}`} className="w-[300px] shrink-0">
@@ -416,50 +249,27 @@ export default function Home() {
         </div>
       </section>
 
-      {/* HOW IT WORKS (Ultra-Sexy 3D Holographic System Visual Match) */}
-      <section id="about" className="relative z-10 border-b border-white/[0.04] bg-[#01060d]/80 py-28 backdrop-blur-sm overflow-hidden">
+      {/* HOW IT WORKS */}
+      <section id="about" className="relative z-10 border-b border-white/[0.04] bg-[#01060d]/70 py-28 backdrop-blur-sm overflow-hidden">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
           <div className="grid gap-16 lg:grid-cols-12 lg:items-center">
-            
-            {/* Holographic 3D Orbit Matching Image */}
-            <div className="relative flex h-[420px] lg:col-span-5 items-center justify-center">
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                {/* Glowing orbital rings */}
-                <div className="absolute h-[300px] w-[500px] rotate-[12deg] rounded-[50%] border border-cyan-400/40 shadow-[0_0_35px_rgba(0,180,255,0.25)] animate-pulse" />
-                <div className="absolute h-[240px] w-[540px] -rotate-[12deg] rounded-[50%] border border-purple-500/40 shadow-[0_0_35px_rgba(160,50,255,0.2)]" />
-                <div className="absolute h-[260px] w-[260px] rounded-full bg-gradient-to-br from-blue-600/30 to-purple-600/20 blur-[60px]" />
+            <div className="relative flex h-full min-h-[500px] w-full items-center justify-center lg:col-span-5">
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+                <div className="h-[60%] w-[90%] rounded-full bg-[#0080ff]/25 blur-[130px]" />
+                <div className="absolute h-[35%] w-[55%] rounded-full bg-[#00d0ff]/20 blur-[80px]" />
+                <div className="absolute h-[20%] w-[35%] rounded-full bg-[#7ceaff]/15 blur-[50px]" />
               </div>
 
-              {/* Central Glowing Core */}
-              <div className="relative flex h-36 w-36 items-center justify-center rounded-full border border-cyan-400/80 bg-gradient-to-br from-[#041e3d] to-[#010b18] shadow-[0_0_60px_rgba(0,180,255,0.6)] z-20">
-                <div className="absolute inset-0 rounded-full border border-cyan-300/30 animate-ping opacity-20" />
-                <img src="/a-logo.png" alt="" className="h-16 w-16 object-contain drop-shadow-[0_0_15px_rgba(0,200,255,0.8)]" />
-              </div>
-
-              {/* Company Node Badge */}
-              <div className="absolute left-[4%] top-[20%] z-30 flex items-center gap-2.5 rounded-full border border-blue-400/70 bg-[#06182c]/95 px-4.5 py-2.5 text-xs font-semibold backdrop-blur-xl shadow-[0_0_25px_rgba(0,140,255,0.4)]">
-                <Building2 size={16} className="text-cyan-400" />
-                Company
-              </div>
-
-              {/* Influencers Node Badge */}
-              <div className="absolute right-[4%] top-[20%] z-30 flex items-center gap-2.5 rounded-full border border-blue-400/70 bg-[#06182c]/95 px-4.5 py-2.5 text-xs font-semibold backdrop-blur-xl shadow-[0_0_25px_rgba(0,140,255,0.4)]">
-                <Users size={16} className="text-cyan-400" />
-                Influencers
-              </div>
-
-              {/* Bottom Core Hub Tag */}
-              <div className="absolute bottom-[6%] inset-x-0 mx-auto w-max z-30 flex flex-col items-center rounded-2xl border border-blue-400/60 bg-[#031124]/95 px-7 py-3 text-center backdrop-blur-xl shadow-[0_0_30px_rgba(0,130,255,0.4)]">
-                <span className="text-sm font-bold text-white tracking-widest">InfluxBridge</span>
-                <span className="text-[11px] text-cyan-300 font-medium tracking-wide mt-0.5">The Connection</span>
-              </div>
+              <img
+                src="/how-it-works.png"
+                alt="InfluxBridge — Company, Influencers, Growth"
+                className="relative z-10 w-[115%] max-w-[900px] select-none mix-blend-screen drop-shadow-[0_0_80px_rgba(0,140,255,0.55)]"
+                draggable={false}
+              />
             </div>
 
-            {/* Right Side Steps */}
             <div className="lg:col-span-7">
-              <TextReveal>
-                <SmallBadge>HOW IT WORKS</SmallBadge>
-              </TextReveal>
+              <TextReveal><SmallBadge>HOW IT WORKS</SmallBadge></TextReveal>
               <TextReveal delay={100}>
                 <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
                   Simple Steps. Powerful Results.
@@ -495,19 +305,16 @@ export default function Home() {
                 ))}
               </div>
             </div>
-
           </div>
         </div>
       </section>
 
       {/* CASE STUDIES */}
-      <section id="case-studies" className="relative z-10 border-b border-white/[0.04] bg-[#01060d]/80 py-28 backdrop-blur-sm">
+      <section id="case-studies" className="relative z-10 border-b border-white/[0.04] bg-[#01060d]/70 py-28 backdrop-blur-sm">
         <div className="mx-auto max-w-[1600px] px-6 lg:px-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
             <div>
-              <TextReveal>
-                <SmallBadge>CASE STUDIES</SmallBadge>
-              </TextReveal>
+              <TextReveal><SmallBadge>CASE STUDIES</SmallBadge></TextReveal>
               <TextReveal delay={100}>
                 <h2 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl lg:text-5xl">
                   Real Campaigns. Measurable Growth.
@@ -541,20 +348,39 @@ export default function Home() {
       </section>
 
       {/* CTA SECTION */}
-      <section className="relative z-10 px-6 py-24 lg:px-12">
+      <section className="relative z-10 px-6 py-24 lg:px-12 overflow-hidden">
         <TextReveal>
-          <div className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[2.5rem] border border-blue-500/60 bg-[#02101e] px-10 py-20 shadow-[0_0_60px_rgba(0,140,255,0.3)]">
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_65%_120%,rgba(0,128,255,.45),transparent_50%)]" />
-            <div className="relative flex flex-col md:flex-row items-center justify-between gap-8">
-              <div>
+          <div
+            className="relative mx-auto max-w-[1400px] overflow-hidden rounded-[2.5rem] border border-blue-500/50 bg-[#020b18] shadow-[0_0_70px_rgba(0,140,255,0.35)]"
+            style={{
+              isolation: "isolate",
+              clipPath: "inset(0 round 2.5rem)",
+            }}
+          >
+            <img
+              src="https://www.fidelity.com/bin-public/600_Fidelity_Com_English/images/migration/international-outlook-banner.jpg"
+              alt=""
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 h-full w-full object-cover"
+              draggable={false}
+            />
+
+            <div className="absolute inset-0 bg-gradient-to-b from-[#020b18]/80 via-[#020b18]/50 to-[#020b18]/85" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_100%,rgba(0,150,255,0.35),transparent_60%)]" />
+            <div className="absolute inset-0 bg-gradient-to-t from-transparent via-transparent to-[#020b18]/70" />
+            <div className="absolute left-1/2 bottom-0 h-[200px] w-[900px] -translate-x-1/2 translate-y-1/2 rounded-full bg-[#00aaff]/30 blur-[100px] pointer-events-none" />
+
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8 px-10 py-16">
+              <div className="text-left">
                 <SmallBadge>YOUR GROWTH PARTNER</SmallBadge>
-                <h2 className="mt-4 text-3xl font-bold sm:text-4xl">
+                <h2 className="mt-4 text-3xl font-bold sm:text-4xl text-white tracking-tight">
                   Let's Build Something Great Together.
                 </h2>
-                <p className="mt-3 text-base text-white/70 max-w-xl">
+                <p className="mt-3 text-base text-white/75 max-w-xl">
                   Get in touch with our team and start your Web3 influencer campaign today.
                 </p>
               </div>
+
               <Link
                 href="/contact"
                 className="flex items-center gap-2 rounded-full bg-gradient-to-r from-[#08a9f8] to-[#9840f1] px-9 py-4 text-base font-bold shadow-[0_0_35px_rgba(0,140,255,0.5)] transition-all hover:scale-105 hover:brightness-110 shrink-0"
@@ -566,70 +392,22 @@ export default function Home() {
           </div>
         </TextReveal>
       </section>
-
-      {/* FOOTER (With Rich Shady Depth & Luxury Vignette) */}
-      <footer className="relative z-10 border-t border-white/[0.08] bg-[#000104] shadow-[inset_0_40px_60px_rgba(0,0,0,0.95)]">
-        <div className="mx-auto flex flex-col md:flex-row h-auto md:h-[120px] max-w-[1600px] items-center justify-between px-6 py-8 lg:px-12 gap-6">
-          <Link href="/" className="flex items-center gap-3">
-            <img
-              src="/a-logo.png"
-              alt="InfluxBridge"
-              className="h-8 w-8 object-contain"
-            />
-            <span className="text-lg font-bold">
-              Influx<span className="text-cyan-400">Bridge</span>
-            </span>
-          </Link>
-
-          <nav className="flex items-center gap-9">
-            {NAV_LINKS.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                className="text-sm text-white/70 transition hover:text-white"
-              >
-                {item.label}
-              </Link>
-            ))}
-          </nav>
-
-          <div className="flex items-center gap-5">
-            <Twitter size={18} className="text-white/70 hover:text-white transition cursor-pointer" />
-            <Youtube size={18} className="text-white/70 hover:text-white transition cursor-pointer" />
-            <MessageCircle size={18} className="text-white/70 hover:text-white transition cursor-pointer" />
-            <Linkedin size={18} className="text-white/70 hover:text-white transition cursor-pointer" />
-            <span className="ml-4 text-xs text-white/40">
-              © 2026 InfluxBridge. All rights reserved.
-            </span>
-          </div>
-        </div>
-      </footer>
-    </main>
+    </PageShell>
   );
 }
 
-/* ============================================================
-   SERVICE CARD
-============================================================ */
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENTS
+═══════════════════════════════════════════════════════════════ */
 
-function ServiceCard({
-  icon: Icon,
-  title,
-  text,
-}: {
-  icon: any;
-  title: string;
-  text: string;
-}) {
+function ServiceCard({ icon: Icon, title, text }: { icon: any; title: string; text: string }) {
   return (
     <div className="group relative overflow-hidden rounded-2xl border border-blue-500/30 bg-gradient-to-b from-[#06172c]/80 to-[#020b17]/90 p-8 shadow-[0_0_20px_rgba(0,95,190,.08)] transition hover:border-cyan-400">
       <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-400/40 bg-[#062343] text-cyan-300 shadow-[0_0_15px_rgba(0,160,255,.2)] transition-transform group-hover:scale-110">
         <Icon size={26} strokeWidth={1.5} />
       </div>
-
       <h3 className="text-lg font-bold text-white">{title}</h3>
       <p className="mt-3 text-sm leading-relaxed text-white/60">{text}</p>
-
       <div className="mt-8 flex h-10 w-10 items-center justify-center rounded-full border border-cyan-400/50 bg-cyan-500/10 text-cyan-300 transition group-hover:border-cyan-400 group-hover:bg-cyan-500/20">
         <ArrowRight size={15} />
       </div>
@@ -637,35 +415,12 @@ function ServiceCard({
   );
 }
 
-/* ============================================================
-   CREATOR CARD
-============================================================ */
-
-function CreatorCard({
-  name,
-  category,
-  followers,
-  engagement,
-  image,
-}: {
-  name: string;
-  category: string;
-  followers: string;
-  engagement: string;
-  image: string;
-}) {
+function CreatorCard({ name, category, followers, engagement, image }: { name: string; category: string; followers: string; engagement: string; image: string }) {
   return (
     <div className="rounded-2xl border border-blue-500/30 bg-[#031326]/90 p-5 shadow-[0_0_20px_rgba(0,90,190,.08)] backdrop-blur-md transition hover:border-cyan-400/50">
       <div className="flex items-center gap-4">
         <div className="h-14 w-14 shrink-0 overflow-hidden rounded-full border border-blue-400/40 bg-gradient-to-br from-slate-500 to-blue-900">
-          <img
-            src={image}
-            alt=""
-            className="h-full w-full object-cover"
-            onError={(e) => {
-              e.currentTarget.style.display = "none";
-            }}
-          />
+          <img src={image} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.style.display = "none"; }} />
         </div>
         <div className="min-w-0">
           <div className="truncate text-base font-bold text-white">{name}</div>
@@ -677,7 +432,6 @@ function CreatorCard({
           </div>
         </div>
       </div>
-
       <div className="mt-5 pt-4 border-t border-white/10 flex items-center justify-between text-xs font-semibold text-white/75">
         <div className="flex items-center gap-1.5">
           <Users size={14} className="text-cyan-400" />
@@ -692,28 +446,14 @@ function CreatorCard({
   );
 }
 
-/* ============================================================
-   CASE CARD
-============================================================ */
-
-function CaseCard({
-  title,
-  result,
-  image,
-}: {
-  title: string;
-  result: string;
-  image: string;
-}) {
+function CaseCard({ title, result, image }: { title: string; result: string; image: string }) {
   return (
     <div className="relative h-[250px] overflow-hidden rounded-2xl border border-blue-500/30 bg-[#031326] transition hover:border-cyan-400/60">
       <img
         src={image}
         alt=""
         className="absolute inset-0 h-full w-full object-cover opacity-70 transition-transform duration-500 hover:scale-105"
-        onError={(e) => {
-          e.currentTarget.style.display = "none";
-        }}
+        onError={(e) => { e.currentTarget.style.display = "none"; }}
       />
       <div className="absolute inset-0 bg-gradient-to-t from-[#020915] via-[#020915]/40 to-transparent" />
       <div className="absolute bottom-5 left-5 right-5 flex items-end justify-between">
@@ -729,13 +469,16 @@ function CaseCard({
   );
 }
 
-/* ============================================================
-   SMALL COMPONENTS
-============================================================ */
-
 function SmallBadge({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex rounded-full border border-cyan-500/60 bg-[#031529]/90 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[.18em] text-cyan-300 backdrop-blur-md">
+    <span
+      className="inline-flex rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[.18em] backdrop-blur-md"
+      style={{
+        borderColor: "rgba(34, 211, 238, 0.55)",
+        backgroundColor: "rgba(3, 21, 41, 0.9)",
+        color: "#67e8f9",
+      }}
+    >
       {children}
     </span>
   );
