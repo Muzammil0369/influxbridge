@@ -254,13 +254,31 @@ export function Footer() {
 
 export function PageShell({ children }: { children: React.ReactNode }) {
   return (
-    <main className="relative min-h-screen overflow-x-hidden bg-[#01050c] text-white">
-      <div className="pointer-events-none fixed inset-0 -z-20 bg-[#01050c]" />
+    <main
+      className="relative min-h-screen overflow-x-hidden text-white"
+      style={{ backgroundColor: "#01050c" }}
+    >
+      {/* Solid dark backdrop — sits behind the canvas */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{
+          zIndex: -1,
+          backgroundColor: "#01050c",
+        }}
+      />
 
-      <ScrollWorldLoader />
+      {/* 3D world — must be above the backdrop but below content */}
+      <div
+        className="pointer-events-none fixed inset-0"
+        style={{ zIndex: 0, background: "transparent" }}
+      >
+        <ScrollWorldLoader />
+      </div>
 
       <Navbar />
-      <div className="relative z-10">{children}</div>
+      <div className="relative" style={{ zIndex: 10 }}>
+        {children}
+      </div>
       <Footer />
     </main>
   );

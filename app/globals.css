@@ -1,5 +1,29 @@
 @import "tailwindcss";
 
+/* ═════════════════════════════════════════════════════════════
+   NUCLEAR DARK BACKGROUND — force everything dark
+   Nothing can be white after this block
+   ═════════════════════════════════════════════════════════════ */
+
+html,
+body {
+  background-color: #01050c !important;
+  color: #ffffff;
+  color-scheme: dark;
+}
+
+/* Next.js root wrappers */
+html > body,
+body > div,
+#__next,
+[data-nextjs-scroll-focus-boundary] {
+  background-color: #01050c !important;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   THEME TOKENS
+   ═════════════════════════════════════════════════════════════ */
+
 :root {
   --background: #02050f;
   --foreground: #ffffff;
@@ -14,18 +38,24 @@ html {
 }
 
 body {
-  background: #02050f;
-  color: #ffffff;
   font-family: var(--font-sans, ui-sans-serif, system-ui, -apple-system,
     "Segoe UI", Roboto, sans-serif);
   min-height: 100vh;
   overflow-x: hidden;
 }
 
+/* ═════════════════════════════════════════════════════════════
+   SELECTION
+   ═════════════════════════════════════════════════════════════ */
+
 ::selection {
   background: rgba(34, 211, 238, 0.25);
   color: #fff;
 }
+
+/* ═════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═════════════════════════════════════════════════════════════ */
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -51,11 +81,19 @@ body {
   scrollbar-width: none;
 }
 
+/* ═════════════════════════════════════════════════════════════
+   FOCUS
+   ═════════════════════════════════════════════════════════════ */
+
 :focus-visible {
   outline: 2px solid rgba(34, 211, 238, 0.6);
   outline-offset: 2px;
   border-radius: 4px;
 }
+
+/* ═════════════════════════════════════════════════════════════
+   MARQUEE ANIMATION
+   ═════════════════════════════════════════════════════════════ */
 
 @keyframes marquee {
   0% {
@@ -68,4 +106,28 @@ body {
 
 .animate-marquee {
   animation: marquee 35s linear infinite;
+}
+
+/* ═════════════════════════════════════════════════════════════
+   CANVAS — must stay transparent
+   ═════════════════════════════════════════════════════════════ */
+
+canvas,
+canvas.r3f,
+canvas[data-engine] {
+  background: transparent !important;
+  background-color: transparent !important;
+  display: block;
+}
+
+div[data-engine] {
+  background: transparent !important;
+}
+
+.__react-three-html-container,
+.__react-three-html-container > div {
+  background: transparent !important;
+  background-color: transparent !important;
+  padding: 0 !important;
+  pointer-events: none;
 }
