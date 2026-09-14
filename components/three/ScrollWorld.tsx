@@ -6,7 +6,7 @@ import { useRef, useMemo, useEffect, useState, Suspense } from "react";
 import * as THREE from "three";
 
 /* ─────────────────────────────────────────────────────────────
-   SCROLL STATE
+   GLOBAL SCROLL STATE — shared, throttled to rAF
 ───────────────────────────────────────────────────────────── */
 const scrollState = {
   raw: 0,
@@ -15,39 +15,44 @@ const scrollState = {
   smoothVelocity: 0,
   lastY: 0,
   lastTime: 0,
+  dirty: false,
 };
 
 function useScrollTracker() {
   useEffect(() => {
-    let ticking = false;
+    let rafId: number | null = null;
 
     scrollState.lastY = window.scrollY;
     scrollState.lastTime = performance.now();
 
+    const update = () => {
+      const now = performance.now();
+      const dt = Math.max(now - scrollState.lastTime, 16);
+      const dy = window.scrollY - scrollState.lastY;
+
+      scrollState.raw = window.scrollY;
+      scrollState.velocity = THREE.MathUtils.clamp(dy / dt, -3, 3);
+
+      scrollState.lastY = window.scrollY;
+      scrollState.lastTime = now;
+      rafId = null;
+    };
+
     const onScroll = () => {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const now = performance.now();
-        const dt = Math.max(now - scrollState.lastTime, 16);
-        const dy = window.scrollY - scrollState.lastY;
-
-        scrollState.raw = window.scrollY;
-        scrollState.velocity = THREE.MathUtils.clamp(dy / dt, -3, 3);
-
-        scrollState.lastY = window.scrollY;
-        scrollState.lastTime = now;
-        ticking = false;
-      });
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(update);
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (rafId !== null) cancelAnimationFrame(rafId);
+    };
   }, []);
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STAR SPRITE TEXTURE — smaller (32px is plenty at this size)
+   STAR SPRITE TEXTURE
 ───────────────────────────────────────────────────────────── */
 function makeStarTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
@@ -69,16 +74,13 @@ function makeStarTexture(): THREE.CanvasTexture {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   PLANET SURFACE — half resolution, same visual impact
+   PLANET SURFACE — 1024px, tight, fast
 ───────────────────────────────────────────────────────────── */
-function makePlanetSurface(size = 1536): THREE.CanvasTexture {
+function makePlanetSurface(size = 1024): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size / 2;
-  const ctx = canvas.getContext("2d", {
-    willReadFrequently: false,
-    alpha: false,
-  })!;
+  const ctx = canvas.getContext("2d", { alpha: false })!;
   const W = canvas.width;
   const H = canvas.height;
 
@@ -89,10 +91,10 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, W, H);
 
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 40; i++) {
     const x = Math.random() * W;
     const y = Math.random() * H;
-    const r = 40 + Math.random() * 100;
+    const r = 30 + Math.random() * 70;
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
     g.addColorStop(0, "rgba(15, 45, 90, 0.4)");
     g.addColorStop(1, "transparent");
@@ -154,8 +156,8 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
     const cy = (poly.reduce((s, p) => s + p[1], 0) / poly.length) * H;
 
     const landGrad = ctx.createRadialGradient(
-      cx - 45, cy - 37, 15,
-      cx, cy, 250
+      cx - 30, cy - 25, 10,
+      cx, cy, 170
     );
     landGrad.addColorStop(0, "#152a3d");
     landGrad.addColorStop(0.4, "#0a1a2a");
@@ -168,44 +170,22 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
     ctx.stroke();
   });
 
-  // Hex grid — coarser to save time
-  ctx.strokeStyle = "rgba(0, 140, 220, 0.25)";
-  ctx.lineWidth = 0.75;
-  const hexSize = 14;
-  const hexH = hexSize * Math.sqrt(3);
-  for (let row = 0; row < H / hexH + 1; row++) {
-    for (let col = 0; col < W / (hexSize * 1.5) + 1; col++) {
-      const x = col * hexSize * 1.5;
-      const y = row * hexH + (col % 2 === 0 ? 0 : hexH / 2);
-      ctx.beginPath();
-      for (let i = 0; i < 6; i++) {
-        const angle = (Math.PI / 3) * i;
-        const px = x + hexSize * Math.cos(angle);
-        const py = y + hexSize * Math.sin(angle);
-        if (i === 0) ctx.moveTo(px, py);
-        else ctx.lineTo(px, py);
-      }
-      ctx.closePath();
-      ctx.stroke();
-    }
-  }
-
   ctx.globalCompositeOperation = "screen";
 
   const majorCities: Array<[number, number, number]> = [
-    [0.22, 0.30, 40], [0.26, 0.24, 35], [0.29, 0.33, 38],
-    [0.25, 0.40, 33], [0.18, 0.35, 28],
-    [0.30, 0.62, 33], [0.32, 0.72, 30], [0.29, 0.80, 28],
-    [0.50, 0.22, 45], [0.53, 0.24, 43], [0.55, 0.20, 40],
-    [0.51, 0.28, 43], [0.54, 0.28, 40],
-    [0.50, 0.42, 35], [0.52, 0.55, 30], [0.52, 0.65, 28],
-    [0.58, 0.38, 30],
-    [0.70, 0.44, 43], [0.68, 0.48, 40], [0.72, 0.46, 38],
-    [0.68, 0.22, 43], [0.72, 0.20, 45], [0.78, 0.22, 48],
-    [0.74, 0.28, 43], [0.80, 0.26, 40], [0.82, 0.30, 38],
-    [0.70, 0.30, 40], [0.76, 0.34, 38],
-    [0.74, 0.48, 33], [0.76, 0.52, 30],
-    [0.82, 0.63, 30], [0.85, 0.68, 28],
+    [0.22, 0.30, 25], [0.26, 0.24, 22], [0.29, 0.33, 25],
+    [0.25, 0.40, 20], [0.18, 0.35, 18],
+    [0.30, 0.62, 22], [0.32, 0.72, 20], [0.29, 0.80, 18],
+    [0.50, 0.22, 30], [0.53, 0.24, 28], [0.55, 0.20, 26],
+    [0.51, 0.28, 28], [0.54, 0.28, 26],
+    [0.50, 0.42, 22], [0.52, 0.55, 20], [0.52, 0.65, 18],
+    [0.58, 0.38, 20],
+    [0.70, 0.44, 28], [0.68, 0.48, 26], [0.72, 0.46, 25],
+    [0.68, 0.22, 28], [0.72, 0.20, 30], [0.78, 0.22, 32],
+    [0.74, 0.28, 28], [0.80, 0.26, 26], [0.82, 0.30, 25],
+    [0.70, 0.30, 26], [0.76, 0.34, 25],
+    [0.74, 0.48, 22], [0.76, 0.52, 20],
+    [0.82, 0.63, 20], [0.85, 0.68, 18],
   ];
 
   majorCities.forEach(([x, y, count]) => {
@@ -213,10 +193,10 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
     const cy = y * H;
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const dist = Math.sqrt(Math.random()) * 55;
+      const dist = Math.sqrt(Math.random()) * 32;
       const px = cx + Math.cos(angle) * dist;
       const py = cy + Math.sin(angle) * dist;
-      const size = 0.7 + Math.random() * 1.2;
+      const size = 0.5 + Math.random() * 0.8;
 
       const g = ctx.createRadialGradient(px, py, 0, px, py, size * 5);
       g.addColorStop(0, "rgba(255, 255, 255, 1)");
@@ -230,7 +210,7 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
     }
   });
 
-  for (let i = 0; i < 900; i++) {
+  for (let i = 0; i < 500; i++) {
     const isLand = Math.random() < 0.7;
     let x = Math.random() * W;
     let y = Math.random() * H;
@@ -245,7 +225,7 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
       y = (minY + Math.random() * (maxY - minY)) * H;
     }
 
-    const size = 0.4 + Math.random() * 1;
+    const size = 0.3 + Math.random() * 0.7;
     const g = ctx.createRadialGradient(x, y, 0, x, y, size * 4);
     g.addColorStop(0, "rgba(200, 250, 255, 0.95)");
     g.addColorStop(0.4, "rgba(100, 210, 255, 0.6)");
@@ -258,12 +238,12 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
 
   ctx.globalCompositeOperation = "source-over";
 
-  ctx.strokeStyle = "rgba(0, 220, 255, 0.75)";
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = "rgba(0, 220, 255, 0.7)";
+  ctx.lineWidth = 0.8;
   ctx.shadowColor = "rgba(0, 220, 255, 1)";
-  ctx.shadowBlur = 6;
+  ctx.shadowBlur = 3;
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 25; i++) {
     const a = majorCities[Math.floor(Math.random() * majorCities.length)];
     const b = majorCities[Math.floor(Math.random() * majorCities.length)];
     if (a === b) continue;
@@ -273,7 +253,7 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
     const endX = b[0] * W;
     const endY = b[1] * H;
     const midX = (startX + endX) / 2;
-    const midY = (startY + endY) / 2 - 40 - Math.random() * 45;
+    const midY = (startY + endY) / 2 - 25 - Math.random() * 30;
 
     ctx.beginPath();
     ctx.moveTo(startX, startY);
@@ -285,7 +265,7 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
   majorCities.forEach(([x, y]) => {
     const cx = x * W;
     const cy = y * H;
-    const r = 8;
+    const r = 5;
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 3);
     g.addColorStop(0, "rgba(255, 255, 255, 1)");
     g.addColorStop(0.15, "rgba(200, 250, 255, 1)");
@@ -311,7 +291,7 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 4;
+  tex.anisotropy = 2;
   tex.generateMipmaps = true;
   tex.minFilter = THREE.LinearMipmapLinearFilter;
   tex.magFilter = THREE.LinearFilter;
@@ -319,7 +299,7 @@ function makePlanetSurface(size = 1536): THREE.CanvasTexture {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STATIC STARFIELD — fewer stars, tighter distribution
+   STARFIELD — 3 static layers, no per-frame updates
 ───────────────────────────────────────────────────────────── */
 function Starfield() {
   const starTexture = useMemo(() => makeStarTexture(), []);
@@ -356,9 +336,9 @@ function Starfield() {
     };
 
     return [
-      makeStars(400, 25, 45),
-      makeStars(900, 45, 75),
-      makeStars(1600, 75, 120),
+      makeStars(300, 25, 45),
+      makeStars(700, 45, 75),
+      makeStars(1200, 75, 120),
     ];
   }, []);
 
@@ -420,7 +400,7 @@ function Starfield() {
 
 /* ─────────────────────────────────────────────────────────────
    ORBIT RING WITH ATTACHED BADGE
-   Optimized: pre-allocated vectors, opacity written only when changed
+   Optimized: DOM writes only on state change, depth check every 2nd frame
 ───────────────────────────────────────────────────────────── */
 function OrbitRingWithBadge({
   radius,
@@ -450,8 +430,8 @@ function OrbitRingWithBadge({
   const wrapperRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(badgeOffsetAngle);
   const lastHiddenState = useRef<boolean | null>(null);
+  const frameCounter = useRef(0);
 
-  // Pre-allocated vectors — no per-frame allocation
   const vecState = useMemo(
     () => ({
       worldPos: new THREE.Vector3(),
@@ -478,7 +458,10 @@ function OrbitRingWithBadge({
     const y = Math.sin(angleRef.current) * radius;
     badgeRef.current.position.set(x, y, 0);
 
-    // ── Depth check (only every 3rd frame for perf) ──
+    // Depth check every 2nd frame (imperceptible, halves the work)
+    frameCounter.current = (frameCounter.current + 1) % 2;
+    if (frameCounter.current !== 0) return;
+
     badgeRef.current.getWorldPosition(vecState.worldPos);
 
     const camera = state.camera;
@@ -509,8 +492,7 @@ function OrbitRingWithBadge({
       }
     }
 
-    // ── Only write to DOM if the state changed ──
-    if (wrapperRef.current && lastHiddenState.current !== isHidden) {
+    if (lastHiddenState.current !== isHidden && wrapperRef.current) {
       lastHiddenState.current = isHidden;
       const parent = wrapperRef.current.parentElement;
       if (parent) {
@@ -530,8 +512,8 @@ function OrbitRingWithBadge({
   return (
     <group rotation={rotation}>
       <group ref={ringRef}>
-        <mesh>
-          <torusGeometry args={[radius, thickness, 8, 96]} />
+        <mesh frustumCulled={false}>
+          <torusGeometry args={[radius, thickness, 8, 64]} />
           <meshBasicMaterial
             color={ringColor}
             transparent
@@ -540,8 +522,8 @@ function OrbitRingWithBadge({
             depthWrite={false}
           />
         </mesh>
-        <mesh>
-          <torusGeometry args={[radius, thickness * 4, 8, 96]} />
+        <mesh frustumCulled={false}>
+          <torusGeometry args={[radius, thickness * 4, 8, 64]} />
           <meshBasicMaterial
             color={ringGlow}
             transparent
@@ -576,6 +558,7 @@ function OrbitRingWithBadge({
               fontFamily: "system-ui, -apple-system, sans-serif",
               whiteSpace: "nowrap",
               willChange: "opacity",
+              transform: "translateZ(0)",
             }}
           >
             <div
@@ -636,22 +619,24 @@ function OrbitRingWithBadge({
 function CenterLogo() {
   const glowRef = useRef<THREE.Mesh>(null);
   const logoTexture = useLoader(THREE.TextureLoader, "/a-logo.png");
+  const timeRef = useRef(0);
 
   useMemo(() => {
     logoTexture.colorSpace = THREE.SRGBColorSpace;
-    logoTexture.anisotropy = 4;
+    logoTexture.anisotropy = 2;
     logoTexture.minFilter = THREE.LinearFilter;
     logoTexture.magFilter = THREE.LinearFilter;
     logoTexture.generateMipmaps = false;
     logoTexture.needsUpdate = true;
   }, [logoTexture]);
 
-  useFrame((state) => {
-    if (glowRef.current) {
-      const t = state.clock.elapsedTime;
-      const pulse = 1 + Math.sin(t * 1.5) * 0.05;
-      glowRef.current.scale.setScalar(pulse);
-    }
+  useFrame((_, delta) => {
+    if (!glowRef.current) return;
+    timeRef.current += delta;
+    // Update pulse at 15fps instead of 60fps (imperceptible)
+    if (Math.floor(timeRef.current * 60) % 4 !== 0) return;
+    const pulse = 1 + Math.sin(timeRef.current * 1.5) * 0.05;
+    glowRef.current.scale.setScalar(pulse);
   });
 
   return (
@@ -720,7 +705,7 @@ function Planet() {
   const groupRotationY = useRef(0);
   const groupRotationX = useRef(0);
 
-  const surfaceTexture = useMemo(() => makePlanetSurface(1536), []);
+  const surfaceTexture = useMemo(() => makePlanetSurface(1024), []);
 
   useFrame((_, delta) => {
     if (!planetGroup.current || !planetRef.current) return;
@@ -768,14 +753,14 @@ function Planet() {
   return (
     <group position={[1.6, 0.3, 0]}>
       <group ref={planetGroup}>
-        <mesh ref={planetRef}>
-          <sphereGeometry args={[R, 64, 48]} />
+        <mesh ref={planetRef} frustumCulled={false}>
+          <sphereGeometry args={[R, 48, 32]} />
           <meshBasicMaterial map={surfaceTexture} color="#ffffff" />
         </mesh>
       </group>
 
-      <mesh scale={1.08}>
-        <sphereGeometry args={[R, 32, 32]} />
+      <mesh scale={1.08} frustumCulled={false}>
+        <sphereGeometry args={[R, 24, 24]} />
         <shaderMaterial
           vertexShader={`
             varying vec3 vNormal;
@@ -805,7 +790,7 @@ function Planet() {
         />
       </mesh>
 
-      <mesh scale={1.2}>
+      <mesh scale={1.2} frustumCulled={false}>
         <sphereGeometry args={[R, 16, 16]} />
         <meshBasicMaterial
           color="#5a3aff"
@@ -817,7 +802,7 @@ function Planet() {
         />
       </mesh>
 
-      <mesh scale={1.4}>
+      <mesh scale={1.4} frustumCulled={false}>
         <sphereGeometry args={[R, 16, 16]} />
         <meshBasicMaterial
           color="#1a5aff"
@@ -893,16 +878,31 @@ function World() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   EXPORT — adaptive DPR, low-power mode on mobile
+   EXPORT — adaptive quality based on device
 ───────────────────────────────────────────────────────────── */
 export default function ScrollWorld() {
   const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
+  const [dpr, setDpr] = useState<number | [number, number]>(1);
+  const [antialias, setAntialias] = useState(true);
 
-  // Detect mobile for lighter DPR
-  const isMobile =
-    typeof window !== "undefined" &&
-    window.matchMedia("(max-width: 768px)").matches;
+  useEffect(() => {
+    setMounted(true);
+
+    // Adaptive quality
+    const isMobile = window.matchMedia("(max-width: 768px)").matches;
+    const isLowEnd =
+      typeof navigator !== "undefined" &&
+      // @ts-expect-error - deviceMemory not in TS types
+      (navigator.deviceMemory || 8) < 4;
+
+    if (isMobile || isLowEnd) {
+      setDpr(1);
+      setAntialias(false);
+    } else {
+      setDpr([1, 1.5]);
+      setAntialias(true);
+    }
+  }, []);
 
   if (!mounted) return null;
 
@@ -914,18 +914,18 @@ export default function ScrollWorld() {
         zIndex: 1,
         pointerEvents: "none",
         background: "transparent",
+        contain: "strict",
       }}
     >
       <Canvas
         camera={{ position: [0, 0, 9], fov: 42 }}
-        dpr={isMobile ? 1 : [1, 1.5]}
+        dpr={dpr}
         flat
         linear
-        frameloop="always"
         style={{ background: "transparent", backgroundColor: "transparent" }}
         gl={{
           alpha: true,
-          antialias: !isMobile,
+          antialias,
           powerPreference: "high-performance",
           stencil: false,
           depth: true,
