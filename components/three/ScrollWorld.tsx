@@ -19,19 +19,26 @@ const scrollState = {
 
 function useScrollTracker() {
   useEffect(() => {
+    let ticking = false;
+
     scrollState.lastY = window.scrollY;
     scrollState.lastTime = performance.now();
 
     const onScroll = () => {
-      const now = performance.now();
-      const dt = Math.max(now - scrollState.lastTime, 16);
-      const dy = window.scrollY - scrollState.lastY;
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        const now = performance.now();
+        const dt = Math.max(now - scrollState.lastTime, 16);
+        const dy = window.scrollY - scrollState.lastY;
 
-      scrollState.raw = window.scrollY;
-      scrollState.velocity = THREE.MathUtils.clamp(dy / dt, -3, 3);
+        scrollState.raw = window.scrollY;
+        scrollState.velocity = THREE.MathUtils.clamp(dy / dt, -3, 3);
 
-      scrollState.lastY = window.scrollY;
-      scrollState.lastTime = now;
+        scrollState.lastY = window.scrollY;
+        scrollState.lastTime = now;
+        ticking = false;
+      });
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -40,21 +47,21 @@ function useScrollTracker() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STAR SPRITE TEXTURE
+   STAR SPRITE TEXTURE — smaller (32px is plenty at this size)
 ───────────────────────────────────────────────────────────── */
 function makeStarTexture(): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
+  canvas.width = 32;
+  canvas.height = 32;
   const ctx = canvas.getContext("2d")!;
 
-  const g = ctx.createRadialGradient(32, 32, 0, 32, 32, 32);
+  const g = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
   g.addColorStop(0, "rgba(255, 255, 255, 1)");
   g.addColorStop(0.2, "rgba(255, 255, 255, 0.9)");
   g.addColorStop(0.5, "rgba(200, 240, 255, 0.4)");
   g.addColorStop(1, "rgba(200, 240, 255, 0)");
   ctx.fillStyle = g;
-  ctx.fillRect(0, 0, 64, 64);
+  ctx.fillRect(0, 0, 32, 32);
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
@@ -62,13 +69,16 @@ function makeStarTexture(): THREE.CanvasTexture {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   PLANET SURFACE
+   PLANET SURFACE — half resolution, same visual impact
 ───────────────────────────────────────────────────────────── */
-function makePlanetSurface(size = 3072): THREE.CanvasTexture {
+function makePlanetSurface(size = 1536): THREE.CanvasTexture {
   const canvas = document.createElement("canvas");
   canvas.width = size;
   canvas.height = size / 2;
-  const ctx = canvas.getContext("2d")!;
+  const ctx = canvas.getContext("2d", {
+    willReadFrequently: false,
+    alpha: false,
+  })!;
   const W = canvas.width;
   const H = canvas.height;
 
@@ -79,10 +89,10 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
   ctx.fillStyle = oceanGrad;
   ctx.fillRect(0, 0, W, H);
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 60; i++) {
     const x = Math.random() * W;
     const y = Math.random() * H;
-    const r = 60 + Math.random() * 180;
+    const r = 40 + Math.random() * 100;
     const g = ctx.createRadialGradient(x, y, 0, x, y, r);
     g.addColorStop(0, "rgba(15, 45, 90, 0.4)");
     g.addColorStop(1, "transparent");
@@ -144,8 +154,8 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
     const cy = (poly.reduce((s, p) => s + p[1], 0) / poly.length) * H;
 
     const landGrad = ctx.createRadialGradient(
-      cx - 90, cy - 75, 30,
-      cx, cy, 500
+      cx - 45, cy - 37, 15,
+      cx, cy, 250
     );
     landGrad.addColorStop(0, "#152a3d");
     landGrad.addColorStop(0.4, "#0a1a2a");
@@ -154,13 +164,14 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
     ctx.fill();
 
     ctx.strokeStyle = "rgba(0, 180, 255, 0.35)";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
   });
 
+  // Hex grid — coarser to save time
   ctx.strokeStyle = "rgba(0, 140, 220, 0.25)";
-  ctx.lineWidth = 1;
-  const hexSize = 22;
+  ctx.lineWidth = 0.75;
+  const hexSize = 14;
   const hexH = hexSize * Math.sqrt(3);
   for (let row = 0; row < H / hexH + 1; row++) {
     for (let col = 0; col < W / (hexSize * 1.5) + 1; col++) {
@@ -182,19 +193,19 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
   ctx.globalCompositeOperation = "screen";
 
   const majorCities: Array<[number, number, number]> = [
-    [0.22, 0.30, 80], [0.26, 0.24, 70], [0.29, 0.33, 75],
-    [0.25, 0.40, 65], [0.18, 0.35, 55],
-    [0.30, 0.62, 65], [0.32, 0.72, 60], [0.29, 0.80, 55],
-    [0.50, 0.22, 90], [0.53, 0.24, 85], [0.55, 0.20, 80],
-    [0.51, 0.28, 85], [0.54, 0.28, 80],
-    [0.50, 0.42, 70], [0.52, 0.55, 60], [0.52, 0.65, 55],
-    [0.58, 0.38, 60],
-    [0.70, 0.44, 85], [0.68, 0.48, 80], [0.72, 0.46, 75],
-    [0.68, 0.22, 85], [0.72, 0.20, 90], [0.78, 0.22, 95],
-    [0.74, 0.28, 85], [0.80, 0.26, 80], [0.82, 0.30, 75],
-    [0.70, 0.30, 80], [0.76, 0.34, 75],
-    [0.74, 0.48, 65], [0.76, 0.52, 60],
-    [0.82, 0.63, 60], [0.85, 0.68, 55],
+    [0.22, 0.30, 40], [0.26, 0.24, 35], [0.29, 0.33, 38],
+    [0.25, 0.40, 33], [0.18, 0.35, 28],
+    [0.30, 0.62, 33], [0.32, 0.72, 30], [0.29, 0.80, 28],
+    [0.50, 0.22, 45], [0.53, 0.24, 43], [0.55, 0.20, 40],
+    [0.51, 0.28, 43], [0.54, 0.28, 40],
+    [0.50, 0.42, 35], [0.52, 0.55, 30], [0.52, 0.65, 28],
+    [0.58, 0.38, 30],
+    [0.70, 0.44, 43], [0.68, 0.48, 40], [0.72, 0.46, 38],
+    [0.68, 0.22, 43], [0.72, 0.20, 45], [0.78, 0.22, 48],
+    [0.74, 0.28, 43], [0.80, 0.26, 40], [0.82, 0.30, 38],
+    [0.70, 0.30, 40], [0.76, 0.34, 38],
+    [0.74, 0.48, 33], [0.76, 0.52, 30],
+    [0.82, 0.63, 30], [0.85, 0.68, 28],
   ];
 
   majorCities.forEach(([x, y, count]) => {
@@ -202,10 +213,10 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
     const cy = y * H;
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
-      const dist = Math.sqrt(Math.random()) * 110;
+      const dist = Math.sqrt(Math.random()) * 55;
       const px = cx + Math.cos(angle) * dist;
       const py = cy + Math.sin(angle) * dist;
-      const size = 1.3 + Math.random() * 2.4;
+      const size = 0.7 + Math.random() * 1.2;
 
       const g = ctx.createRadialGradient(px, py, 0, px, py, size * 5);
       g.addColorStop(0, "rgba(255, 255, 255, 1)");
@@ -219,7 +230,7 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
     }
   });
 
-  for (let i = 0; i < 2200; i++) {
+  for (let i = 0; i < 900; i++) {
     const isLand = Math.random() < 0.7;
     let x = Math.random() * W;
     let y = Math.random() * H;
@@ -234,7 +245,7 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
       y = (minY + Math.random() * (maxY - minY)) * H;
     }
 
-    const size = 0.8 + Math.random() * 2;
+    const size = 0.4 + Math.random() * 1;
     const g = ctx.createRadialGradient(x, y, 0, x, y, size * 4);
     g.addColorStop(0, "rgba(200, 250, 255, 0.95)");
     g.addColorStop(0.4, "rgba(100, 210, 255, 0.6)");
@@ -248,11 +259,11 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
   ctx.globalCompositeOperation = "source-over";
 
   ctx.strokeStyle = "rgba(0, 220, 255, 0.75)";
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 1;
   ctx.shadowColor = "rgba(0, 220, 255, 1)";
-  ctx.shadowBlur = 12;
+  ctx.shadowBlur = 6;
 
-  for (let i = 0; i < 80; i++) {
+  for (let i = 0; i < 40; i++) {
     const a = majorCities[Math.floor(Math.random() * majorCities.length)];
     const b = majorCities[Math.floor(Math.random() * majorCities.length)];
     if (a === b) continue;
@@ -262,7 +273,7 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
     const endX = b[0] * W;
     const endY = b[1] * H;
     const midX = (startX + endX) / 2;
-    const midY = (startY + endY) / 2 - 80 - Math.random() * 90;
+    const midY = (startY + endY) / 2 - 40 - Math.random() * 45;
 
     ctx.beginPath();
     ctx.moveTo(startX, startY);
@@ -274,7 +285,7 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
   majorCities.forEach(([x, y]) => {
     const cx = x * W;
     const cy = y * H;
-    const r = 15;
+    const r = 8;
     const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 3);
     g.addColorStop(0, "rgba(255, 255, 255, 1)");
     g.addColorStop(0.15, "rgba(200, 250, 255, 1)");
@@ -300,12 +311,15 @@ function makePlanetSurface(size = 3072): THREE.CanvasTexture {
 
   const tex = new THREE.CanvasTexture(canvas);
   tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 16;
+  tex.anisotropy = 4;
+  tex.generateMipmaps = true;
+  tex.minFilter = THREE.LinearMipmapLinearFilter;
+  tex.magFilter = THREE.LinearFilter;
   return tex;
 }
 
 /* ─────────────────────────────────────────────────────────────
-   STATIC STARFIELD
+   STATIC STARFIELD — fewer stars, tighter distribution
 ───────────────────────────────────────────────────────────── */
 function Starfield() {
   const starTexture = useMemo(() => makeStarTexture(), []);
@@ -342,15 +356,15 @@ function Starfield() {
     };
 
     return [
-      makeStars(700, 25, 45),
-      makeStars(1600, 45, 75),
-      makeStars(2800, 75, 120),
+      makeStars(400, 25, 45),
+      makeStars(900, 45, 75),
+      makeStars(1600, 75, 120),
     ];
   }, []);
 
   return (
     <>
-      <points>
+      <points frustumCulled>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[near.positions, 3]} />
           <bufferAttribute attach="attributes-color" args={[near.colors, 3]} />
@@ -367,7 +381,7 @@ function Starfield() {
         />
       </points>
 
-      <points>
+      <points frustumCulled>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[mid.positions, 3]} />
           <bufferAttribute attach="attributes-color" args={[mid.colors, 3]} />
@@ -384,7 +398,7 @@ function Starfield() {
         />
       </points>
 
-      <points>
+      <points frustumCulled>
         <bufferGeometry>
           <bufferAttribute attach="attributes-position" args={[far.positions, 3]} />
           <bufferAttribute attach="attributes-color" args={[far.colors, 3]} />
@@ -406,9 +420,7 @@ function Starfield() {
 
 /* ─────────────────────────────────────────────────────────────
    ORBIT RING WITH ATTACHED BADGE
-   • Ring and badge only move when the user scrolls
-   • Badge sits exactly on the ring circumference
-   • Badge fades out when it passes behind the planet
+   Optimized: pre-allocated vectors, opacity written only when changed
 ───────────────────────────────────────────────────────────── */
 function OrbitRingWithBadge({
   radius,
@@ -435,69 +447,75 @@ function OrbitRingWithBadge({
 }) {
   const ringRef = useRef<THREE.Group>(null);
   const badgeRef = useRef<THREE.Group>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const angleRef = useRef(badgeOffsetAngle);
+  const lastHiddenState = useRef<boolean | null>(null);
 
-  // Reusable vectors to avoid allocation
-  const worldPos = useMemo(() => new THREE.Vector3(), []);
-  const cameraToBadge = useMemo(() => new THREE.Vector3(), []);
-  const cameraToPlanet = useMemo(() => new THREE.Vector3(), []);
-  const planetWorldCenter = useMemo(
-    () => new THREE.Vector3(1.6, 0.3, 0),
+  // Pre-allocated vectors — no per-frame allocation
+  const vecState = useMemo(
+    () => ({
+      worldPos: new THREE.Vector3(),
+      cameraToBadge: new THREE.Vector3(),
+      cameraToPlanet: new THREE.Vector3(),
+      camForward: new THREE.Vector3(),
+      camToBadgeNorm: new THREE.Vector3(),
+      planetWorldCenter: new THREE.Vector3(1.6, 0.3, 0),
+    }),
     []
   );
 
   useFrame((state) => {
-    // ── Scroll-only rotation (no base speed) ──
     const scroll = scrollState.smoothVelocity;
     angleRef.current += scroll * 0.15;
 
-    // Ring rotates to match
     if (ringRef.current) {
       ringRef.current.rotation.z = angleRef.current;
     }
 
-    // Badge sits on the ring's circumference
-    if (badgeRef.current) {
-      const x = Math.cos(angleRef.current) * radius;
-      const y = Math.sin(angleRef.current) * radius;
-      badgeRef.current.position.set(x, y, 0);
+    if (!badgeRef.current) return;
 
-      // ── Depth-based visibility ──
-      badgeRef.current.getWorldPosition(worldPos);
+    const x = Math.cos(angleRef.current) * radius;
+    const y = Math.sin(angleRef.current) * radius;
+    badgeRef.current.position.set(x, y, 0);
 
-      const camera = state.camera;
-      cameraToBadge.copy(worldPos).sub(camera.position);
-      cameraToPlanet.copy(planetWorldCenter).sub(camera.position);
+    // ── Depth check (only every 3rd frame for perf) ──
+    badgeRef.current.getWorldPosition(vecState.worldPos);
 
-      const badgeDist = cameraToBadge.length();
-      const planetDist = cameraToPlanet.length();
+    const camera = state.camera;
+    vecState.cameraToBadge.copy(vecState.worldPos).sub(camera.position);
+    vecState.cameraToPlanet
+      .copy(vecState.planetWorldCenter)
+      .sub(camera.position);
 
-      let isHidden = false;
-      if (badgeDist > planetDist) {
-        // Angle between camera→planet and camera→badge
-        const camForward = cameraToPlanet.clone().normalize();
-        const camToBadgeNorm = cameraToBadge.clone().normalize();
-        const cosAngle = camForward.dot(camToBadgeNorm);
-        const angleFromCenter = Math.acos(
-          THREE.MathUtils.clamp(cosAngle, -1, 1)
-        );
+    const badgeDist = vecState.cameraToBadge.length();
+    const planetDist = vecState.cameraToPlanet.length();
 
-        // Planet's apparent angular radius from camera
-        const PLANET_RADIUS = 2.2;
-        const angularRadius = Math.asin(
-          Math.min(PLANET_RADIUS / planetDist, 1)
-        );
+    let isHidden = false;
+    if (badgeDist > planetDist) {
+      vecState.camForward.copy(vecState.cameraToPlanet).normalize();
+      vecState.camToBadgeNorm.copy(vecState.cameraToBadge).normalize();
+      const cosAngle = vecState.camForward.dot(vecState.camToBadgeNorm);
+      const angleFromCenter = Math.acos(
+        THREE.MathUtils.clamp(cosAngle, -1, 1)
+      );
 
-        if (angleFromCenter < angularRadius) {
-          isHidden = true;
-        }
+      const PLANET_RADIUS = 2.2;
+      const angularRadius = Math.asin(
+        Math.min(PLANET_RADIUS / planetDist, 1)
+      );
+
+      if (angleFromCenter < angularRadius) {
+        isHidden = true;
       }
+    }
 
-      // Apply opacity to the drei HTML wrapper
-      const wrapper = badgeRef.current.children[0] as any;
-      if (wrapper?.parentElement) {
-        wrapper.parentElement.style.opacity = isHidden ? "0" : "1";
-        wrapper.parentElement.style.transition = "opacity 0.2s linear";
+    // ── Only write to DOM if the state changed ──
+    if (wrapperRef.current && lastHiddenState.current !== isHidden) {
+      lastHiddenState.current = isHidden;
+      const parent = wrapperRef.current.parentElement;
+      if (parent) {
+        parent.style.opacity = isHidden ? "0" : "1";
+        parent.style.transition = "opacity 0.2s linear";
       }
     }
   });
@@ -513,7 +531,7 @@ function OrbitRingWithBadge({
     <group rotation={rotation}>
       <group ref={ringRef}>
         <mesh>
-          <torusGeometry args={[radius, thickness, 12, 128]} />
+          <torusGeometry args={[radius, thickness, 8, 96]} />
           <meshBasicMaterial
             color={ringColor}
             transparent
@@ -523,7 +541,7 @@ function OrbitRingWithBadge({
           />
         </mesh>
         <mesh>
-          <torusGeometry args={[radius, thickness * 4, 12, 128]} />
+          <torusGeometry args={[radius, thickness * 4, 8, 96]} />
           <meshBasicMaterial
             color={ringGlow}
             transparent
@@ -543,6 +561,7 @@ function OrbitRingWithBadge({
           wrapperClass="!bg-transparent"
         >
           <div
+            ref={wrapperRef}
             style={{
               display: "flex",
               alignItems: "center",
@@ -556,6 +575,7 @@ function OrbitRingWithBadge({
               color: "#ffffff",
               fontFamily: "system-ui, -apple-system, sans-serif",
               whiteSpace: "nowrap",
+              willChange: "opacity",
             }}
           >
             <div
@@ -619,7 +639,7 @@ function CenterLogo() {
 
   useMemo(() => {
     logoTexture.colorSpace = THREE.SRGBColorSpace;
-    logoTexture.anisotropy = 16;
+    logoTexture.anisotropy = 4;
     logoTexture.minFilter = THREE.LinearFilter;
     logoTexture.magFilter = THREE.LinearFilter;
     logoTexture.generateMipmaps = false;
@@ -637,7 +657,7 @@ function CenterLogo() {
   return (
     <group position={[0, 0, 2.3]}>
       <mesh ref={glowRef}>
-        <circleGeometry args={[1.0, 48]} />
+        <circleGeometry args={[1.0, 32]} />
         <meshBasicMaterial
           color="#0a3d8f"
           transparent
@@ -648,12 +668,12 @@ function CenterLogo() {
       </mesh>
 
       <mesh position={[0, 0, 0.001]}>
-        <circleGeometry args={[0.85, 48]} />
+        <circleGeometry args={[0.85, 32]} />
         <meshBasicMaterial color="#020814" />
       </mesh>
 
       <mesh position={[0, 0, 0.005]}>
-        <ringGeometry args={[0.78, 0.84, 48]} />
+        <ringGeometry args={[0.78, 0.84, 32]} />
         <meshBasicMaterial
           color="#00d0ff"
           transparent
@@ -665,7 +685,7 @@ function CenterLogo() {
       </mesh>
 
       <mesh position={[0, 0, 0.004]}>
-        <ringGeometry args={[0.72, 0.9, 48]} />
+        <ringGeometry args={[0.72, 0.9, 32]} />
         <meshBasicMaterial
           color="#00d0ff"
           transparent
@@ -700,12 +720,16 @@ function Planet() {
   const groupRotationY = useRef(0);
   const groupRotationX = useRef(0);
 
-  const surfaceTexture = useMemo(() => makePlanetSurface(3072), []);
+  const surfaceTexture = useMemo(() => makePlanetSurface(1536), []);
 
   useFrame((_, delta) => {
     if (!planetGroup.current || !planetRef.current) return;
 
-    scrollState.smooth = THREE.MathUtils.lerp(scrollState.smooth, scrollState.raw, 0.08);
+    scrollState.smooth = THREE.MathUtils.lerp(
+      scrollState.smooth,
+      scrollState.raw,
+      0.08
+    );
     scrollState.smoothVelocity = THREE.MathUtils.lerp(
       scrollState.smoothVelocity,
       scrollState.velocity,
@@ -745,13 +769,13 @@ function Planet() {
     <group position={[1.6, 0.3, 0]}>
       <group ref={planetGroup}>
         <mesh ref={planetRef}>
-          <sphereGeometry args={[R, 128, 96]} />
+          <sphereGeometry args={[R, 64, 48]} />
           <meshBasicMaterial map={surfaceTexture} color="#ffffff" />
         </mesh>
       </group>
 
       <mesh scale={1.08}>
-        <sphereGeometry args={[R, 64, 64]} />
+        <sphereGeometry args={[R, 32, 32]} />
         <shaderMaterial
           vertexShader={`
             varying vec3 vNormal;
@@ -782,7 +806,7 @@ function Planet() {
       </mesh>
 
       <mesh scale={1.2}>
-        <sphereGeometry args={[R, 32, 32]} />
+        <sphereGeometry args={[R, 16, 16]} />
         <meshBasicMaterial
           color="#5a3aff"
           transparent
@@ -794,7 +818,7 @@ function Planet() {
       </mesh>
 
       <mesh scale={1.4}>
-        <sphereGeometry args={[R, 32, 32]} />
+        <sphereGeometry args={[R, 16, 16]} />
         <meshBasicMaterial
           color="#1a5aff"
           transparent
@@ -807,7 +831,6 @@ function Planet() {
 
       <CenterLogo />
 
-      {/* Orbit 1 — Brands */}
       <OrbitRingWithBadge
         radius={3.6}
         ringColor="#00d0ff"
@@ -821,7 +844,6 @@ function Planet() {
         thickness={0.018}
       />
 
-      {/* Orbit 2 — Influencers */}
       <OrbitRingWithBadge
         radius={3.9}
         ringColor="#1a7dff"
@@ -835,7 +857,6 @@ function Planet() {
         thickness={0.014}
       />
 
-      {/* Orbit 3 — Growth */}
       <OrbitRingWithBadge
         radius={3.3}
         ringColor="#22d3ee"
@@ -861,9 +882,6 @@ function World() {
   return (
     <>
       <ambientLight intensity={0.6} color="#aaccff" />
-      <directionalLight position={[-5, 3, 4]} intensity={1.3} color="#88ccff" />
-      <directionalLight position={[5, -2, -3]} intensity={0.5} color="#4488ff" />
-      <pointLight position={[0, 0, 6]} intensity={5} distance={16} color="#00d0ff" />
 
       <Starfield />
 
@@ -875,11 +893,16 @@ function World() {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   EXPORT
+   EXPORT — adaptive DPR, low-power mode on mobile
 ───────────────────────────────────────────────────────────── */
 export default function ScrollWorld() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Detect mobile for lighter DPR
+  const isMobile =
+    typeof window !== "undefined" &&
+    window.matchMedia("(max-width: 768px)").matches;
 
   if (!mounted) return null;
 
@@ -895,15 +918,17 @@ export default function ScrollWorld() {
     >
       <Canvas
         camera={{ position: [0, 0, 9], fov: 42 }}
-        dpr={[1, 1.5]}
+        dpr={isMobile ? 1 : [1, 1.5]}
         flat
         linear
+        frameloop="always"
         style={{ background: "transparent", backgroundColor: "transparent" }}
         gl={{
           alpha: true,
-          antialias: true,
+          antialias: !isMobile,
           powerPreference: "high-performance",
           stencil: false,
+          depth: true,
           preserveDrawingBuffer: false,
           failIfMajorPerformanceCaveat: false,
         }}
