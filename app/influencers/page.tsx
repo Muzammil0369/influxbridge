@@ -1,6 +1,5 @@
 "use client";
 
-import ScrollWorldLoader from "@/components/three/ScrollWorldLoader";
 import { PageShell } from "@/components/layout/PageShell";
 import { GradientBorder } from "@/components/ui/GradientBorder";
 import { TextReveal } from "@/components/ui/TextReveal";
@@ -70,7 +69,6 @@ export default function InfluencersPage() {
     <PageShell>
       {/* 3D BACKGROUND CONTAINER */}
       <div className="pointer-events-none fixed inset-0 -z-10">
-        <ScrollWorldLoader />
       </div>
 
       {/* CONTENT CONTAINER */}
