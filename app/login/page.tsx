@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<Role>("company");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState("");0
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
@@ -41,20 +41,22 @@ export default function LoginPage() {
       {/* Navbar */}
       <nav className="relative z-20 border-b border-white/[0.06] bg-[#01050c]/80 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-10">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-cyan-400/30 bg-[#031529]/90 shadow-[0_0_15px_rgba(0,170,255,0.3)]">
-              <Globe2 className="h-5 w-5 text-cyan-400" />
-            </div>
+            
             <div>
-              <div className="text-lg font-bold tracking-tight">
-                Influx<span className="text-[#16a8ff]">Bridge</span>
-              </div>
+              <Link href="/" className="flex shrink-0 items-center gap-2.5 sm:gap-3">
+            <img
+              src="/a-logo.png"
+              alt="InfluxBridge"
+              className="h-8 w-8 sm:h-9 sm:w-9 object-contain drop-shadow-[0_0_10px_rgba(0,180,255,0.8)]"
+            />
+            <span className="text-base sm:text-lg font-bold tracking-[-0.04em]">
+              Influx<span className="text-[#16a8ff]">Bridge</span>
+            </span>
+          </Link>
               <div className="text-[9px] uppercase tracking-[0.28em] text-white/40">
                 Market Intelligence
               </div>
             </div>
-          </Link>
-
           <Link
             href="/"
             className="text-sm text-white/60 transition hover:text-white"
