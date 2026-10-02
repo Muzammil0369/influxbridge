@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { getCampaigns, getInfluencers, getLeads } from "@/lib/platform";
 import {
   Activity,
