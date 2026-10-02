@@ -22,6 +22,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { getCampaigns } from "@/lib/platform";
 
 type CampaignStatus = "Active" | "In Review" | "Completed";
 
@@ -39,47 +40,7 @@ type Campaign = {
   managerInitials: string;
 };
 
-const campaigns: Campaign[] = [
-  {
-    id: "novapay-market-launch",
-    client: "NovaPay",
-    title: "Pakistan Market Launch",
-    status: "Active",
-    category: "Fintech",
-    deadline: "Oct 18, 2026",
-    budget: "$1,200",
-    deliverables: "3 / 5",
-    progress: 60,
-    manager: "Sarah Khan",
-    managerInitials: "SK",
-  },
-  {
-    id: "vaultx-awareness",
-    client: "VaultX",
-    title: "Digital Asset Awareness",
-    status: "In Review",
-    category: "Web3",
-    deadline: "Oct 09, 2026",
-    budget: "$850",
-    deliverables: "4 / 4",
-    progress: 92,
-    manager: "Ali Raza",
-    managerInitials: "AR",
-  },
-  {
-    id: "finora-launch",
-    client: "Finora",
-    title: "Creator Launch Series",
-    status: "Completed",
-    category: "Fintech",
-    deadline: "Sep 21, 2026",
-    budget: "$1,050",
-    deliverables: "6 / 6",
-    progress: 100,
-    manager: "Sarah Khan",
-    managerInitials: "SK",
-  },
-];
+const campaigns: Campaign[] = getCampaigns().map((x) => ({ id:x.id, client:x.client, title:x.name, status:x.status, category:x.category, deadline:new Date(x.deadline).toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}), budget:`$${x.budget.toLocaleString()}`, deliverables:`${x.creators} creators assigned`, progress:x.progress, manager:x.manager, managerInitials:"IB" }));
 
 const statusStyles: Record<CampaignStatus, string> = {
   Active:
