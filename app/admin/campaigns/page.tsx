@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getCampaigns } from "@/lib/platform";
 import { Filter, MoreHorizontal, Search } from "lucide-react";
 
 type Row = Record<string, string>;
 
-const rows: Row[] = [{"campaign":"Pakistan Market Launch","company":"NovaPay","status":"Active","progress":"68%","creators":"8"},{"campaign":"Digital Asset Awareness","company":"VaultX","status":"In Review","progress":"91%","creators":"5"},{"campaign":"Creator Launch Series","company":"Finora","status":"Completed","progress":"100%","creators":"6"}];
+const [rows,setRows] = useState<Row[]>([]);
+  useEffect(() => { const load=()=>setRows(getCampaigns().map(x=>({campaign:x.name,company:x.client,status:x.status,progress:`${x.progress}%`,creators:String(x.creators)}))); load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
 const filters = ["All","Active","In Review","Completed"];
 const title = { eyebrow: "Campaign Operations", heading: "Campaigns", sub: "Monitor active work, creator assignments, delivery progress, and completion." };
 
