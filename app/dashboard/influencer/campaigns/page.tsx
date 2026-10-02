@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import {
-  ArrowLeft,
   ArrowRight,
   Bell,
   BriefcaseBusiness,
@@ -15,7 +14,7 @@ import {
   Home,
   Menu,
   MessageSquare,
-  Plus,
+  MoreHorizontal,
   Search,
   Sparkles,
   TrendingUp,
@@ -28,67 +27,70 @@ type CampaignStatus = "Active" | "In Review" | "Completed";
 
 type Campaign = {
   id: string;
+  client: string;
   title: string;
-  category: string;
   status: CampaignStatus;
-  creators: number;
-  budget: string;
-  reach: string;
+  category: string;
   deadline: string;
+  budget: string;
+  deliverables: string;
   progress: number;
-  description: string;
+  manager: string;
+  managerInitials: string;
 };
 
 const campaigns: Campaign[] = [
   {
     id: "novapay-market-launch",
+    client: "NovaPay",
     title: "Pakistan Market Launch",
-    category: "Fintech",
     status: "Active",
-    creators: 8,
-    budget: "$12,500",
-    reach: "4.8M",
+    category: "Fintech",
     deadline: "Oct 18, 2026",
-    progress: 68,
-    description:
-      "Creator-led awareness campaign supporting NovaPay's Pakistan market entry.",
+    budget: "$1,200",
+    deliverables: "3 / 5",
+    progress: 60,
+    manager: "Sarah Khan",
+    managerInitials: "SK",
   },
   {
     id: "vaultx-awareness",
+    client: "VaultX",
     title: "Digital Asset Awareness",
-    category: "Web3",
     status: "In Review",
-    creators: 5,
-    budget: "$7,800",
-    reach: "2.1M",
+    category: "Web3",
     deadline: "Oct 09, 2026",
-    progress: 91,
-    description:
-      "Educational creator campaign focused on responsible digital asset awareness.",
+    budget: "$850",
+    deliverables: "4 / 4",
+    progress: 92,
+    manager: "Ali Raza",
+    managerInitials: "AR",
   },
   {
-    id: "finora-creator-series",
+    id: "finora-launch",
+    client: "Finora",
     title: "Creator Launch Series",
-    category: "Fintech",
     status: "Completed",
-    creators: 6,
-    budget: "$9,200",
-    reach: "3.4M",
+    category: "Fintech",
     deadline: "Sep 21, 2026",
+    budget: "$1,050",
+    deliverables: "6 / 6",
     progress: 100,
-    description:
-      "Multi-creator launch series introducing Finora to a Pakistani audience.",
+    manager: "Sarah Khan",
+    managerInitials: "SK",
   },
 ];
 
 const statusStyles: Record<CampaignStatus, string> = {
-  Active: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
-  "In Review": "border-amber-400/20 bg-amber-400/10 text-amber-300",
+  Active:
+    "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
+  "In Review":
+    "border-amber-400/20 bg-amber-400/10 text-amber-300",
   Completed:
     "border-emerald-400/20 bg-emerald-400/10 text-emerald-300",
 };
 
-export default function CompanyCampaignsPage() {
+export default function InfluencerCampaignsPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [filter, setFilter] = useState<"All" | CampaignStatus>("All");
   const [search, setSearch] = useState("");
@@ -101,6 +103,7 @@ export default function CompanyCampaignsPage() {
 
     const matchesSearch =
       campaign.title.toLowerCase().includes(query) ||
+      campaign.client.toLowerCase().includes(query) ||
       campaign.category.toLowerCase().includes(query);
 
     return matchesFilter && matchesSearch;
@@ -108,14 +111,20 @@ export default function CompanyCampaignsPage() {
 
   return (
     <div className="min-h-screen bg-[#05070d] text-white">
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute -left-40 top-0 h-[500px] w-[500px] rounded-full bg-cyan-500/5 blur-[140px]" />
+        <div className="absolute right-0 top-[30%] h-[450px] w-[450px] rounded-full bg-violet-500/5 blur-[140px]" />
+      </div>
+
+      {/* Sidebar */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-white/10 bg-[#080b13]/95 backdrop-blur-xl transition-transform lg:translate-x-0 ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 border-r border-white/10 bg-[#080b13]/95 backdrop-blur-xl transition-transform duration-300 lg:translate-x-0 ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         <div className="flex h-full flex-col">
           <div className="flex h-20 items-center justify-between border-b border-white/10 px-6">
-            <Link href="/">
+            <Link href="/" className="flex items-center">
               <img
                 src="/a-logo.png"
                 alt="InfluxBridge"
@@ -125,90 +134,81 @@ export default function CompanyCampaignsPage() {
 
             <button
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden"
+              className="rounded-lg p-2 text-white/50 hover:bg-white/5 hover:text-white lg:hidden"
             >
               <X size={20} />
             </button>
           </div>
 
           <div className="border-b border-white/10 px-6 py-5">
-            <p className="text-xs uppercase tracking-[0.18em] text-cyan-300/60">
-              Company Portal
-            </p>
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br from-cyan-400/20 to-violet-500/20 text-sm font-bold text-cyan-300">
+                AM
+              </div>
 
-            <p className="mt-2 text-sm font-semibold">
-              NovaPay
-            </p>
-
-            <p className="mt-1 text-xs text-white/30">
-              Pakistan market account
-            </p>
+              <div>
+                <p className="text-sm font-semibold">Ahmed Malik</p>
+                <p className="text-xs text-white/40">Creator account</p>
+              </div>
+            </div>
           </div>
 
           <nav className="flex-1 space-y-1 px-4 py-6">
             <SidebarLink
-              href="/dashboard/company"
+              href="/dashboard/influencer"
               icon={<Home size={18} />}
               label="Overview"
             />
 
             <SidebarLink
-              href="/dashboard/company/campaigns"
+              href="/dashboard/influencer/campaigns"
               icon={<BriefcaseBusiness size={18} />}
               label="Campaigns"
               active
             />
 
             <SidebarLink
-              href="/dashboard/company/influencers"
-              icon={<Users size={18} />}
-              label="Creator Network"
+              href="/dashboard/influencer/messages"
+              icon={<MessageSquare size={18} />}
+              label="Messages"
+              badge="3"
             />
 
             <SidebarLink
-              href="/dashboard/company/messages"
-              icon={<MessageSquare size={18} />}
-              label="Messages"
-              badge="2"
+              href="/dashboard/influencer/profile"
+              icon={<Users size={18} />}
+              label="My Profile"
             />
           </nav>
 
           <div className="border-t border-white/10 p-4">
             <Link
-              href="/contact"
-              className="flex items-center justify-between rounded-xl bg-cyan-400 px-4 py-3 text-sm font-semibold text-black transition hover:bg-cyan-300"
-            >
-              Request Campaign
-              <ArrowRight size={16} />
-            </Link>
-
-            <Link
               href="/"
-              className="mt-2 flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/40 hover:bg-white/5 hover:text-white"
+              className="flex items-center gap-3 rounded-xl px-3 py-3 text-sm text-white/50 transition hover:bg-white/5 hover:text-white"
             >
-              <ArrowLeft size={18} />
+              <ArrowRight size={18} className="rotate-180" />
               Back to website
             </Link>
           </div>
         </div>
       </aside>
 
+      {/* Main */}
       <main className="lg:pl-72">
-        <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070d]/85 backdrop-blur-xl">
+        <header className="sticky top-0 z-40 border-b border-white/10 bg-[#05070d]/80 backdrop-blur-xl">
           <div className="flex h-20 items-center justify-between px-5 sm:px-8">
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setMobileOpen(true)}
-                className="rounded-xl border border-white/10 p-2 lg:hidden"
+                className="rounded-xl border border-white/10 p-2.5 text-white/70 hover:bg-white/5 lg:hidden"
               >
-                <Menu size={19} />
+                <Menu size={20} />
               </button>
 
               <div>
                 <p className="text-xs uppercase tracking-[0.2em] text-cyan-300/70">
-                  Company Portal
+                  Creator Portal
                 </p>
-
                 <h1 className="mt-1 text-xl font-semibold">
                   Campaigns
                 </h1>
@@ -216,51 +216,46 @@ export default function CompanyCampaignsPage() {
             </div>
 
             <div className="flex items-center gap-2">
-              <button className="relative rounded-xl border border-white/10 p-2.5 text-white/60 hover:bg-white/5">
+              <button className="relative rounded-xl border border-white/10 p-2.5 text-white/60 hover:bg-white/5 hover:text-white">
                 <Bell size={18} />
                 <span className="absolute right-2 top-2 h-1.5 w-1.5 rounded-full bg-cyan-400" />
               </button>
 
-              <div className="hidden h-10 items-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/50 sm:flex">
-                NP
+              <div className="hidden h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-xs font-semibold sm:flex">
+                AM
               </div>
             </div>
           </div>
         </header>
 
-        <div className="mx-auto max-w-[1500px] px-5 py-8 sm:px-8 lg:px-10">
-          <div className="flex flex-col justify-between gap-5 md:flex-row md:items-end">
+        <div className="relative mx-auto max-w-[1500px] px-5 py-8 sm:px-8 lg:px-10">
+          {/* Heading */}
+          <div className="mb-8 flex flex-col justify-between gap-5 md:flex-row md:items-end">
             <div>
               <p className="mb-2 flex items-center gap-2 text-sm text-cyan-300">
                 <Sparkles size={15} />
-                Campaign operations
+                Your opportunities
               </p>
 
               <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-                Your campaigns
+                Campaign workspace
               </h2>
 
               <p className="mt-3 max-w-2xl text-sm leading-6 text-white/45">
-                Track campaign progress, creator activity, deliverables,
-                reach, and project status from one workspace.
+                Manage active collaborations, review deliverables,
+                track deadlines, and stay connected with the
+                InfluxBridge campaign team.
               </p>
             </div>
-
-            <Link
-              href="/contact"
-              className="flex items-center justify-center gap-2 rounded-xl bg-cyan-400 px-5 py-3 text-sm font-semibold text-black hover:bg-cyan-300"
-            >
-              <Plus size={17} />
-              Request campaign
-            </Link>
           </div>
 
-          <div className="mt-8 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {/* Stats */}
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard
               icon={<BriefcaseBusiness size={18} />}
               label="Total campaigns"
-              value="8"
-              detail="Across your account"
+              value="12"
+              detail="+2 this month"
             />
 
             <StatCard
@@ -271,20 +266,21 @@ export default function CompanyCampaignsPage() {
             />
 
             <StatCard
-              icon={<Users size={18} />}
-              label="Creators engaged"
-              value="31"
-              detail="Across all campaigns"
+              icon={<DollarSign size={18} />}
+              label="Campaign earnings"
+              value="$8,420"
+              detail="Mock account data"
             />
 
             <StatCard
-              icon={<DollarSign size={18} />}
-              label="Campaign budget"
-              value="$42.8K"
-              detail="Prototype figure"
+              icon={<CheckCircle2 size={18} />}
+              label="Completed"
+              value="9"
+              detail="Successful deliverables"
             />
           </div>
 
+          {/* Filters */}
           <div className="mt-10 rounded-2xl border border-white/10 bg-white/[0.025] p-4">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div className="flex flex-wrap gap-2">
@@ -296,7 +292,7 @@ export default function CompanyCampaignsPage() {
                       className={`rounded-xl border px-4 py-2 text-sm transition ${
                         filter === item
                           ? "border-cyan-400/30 bg-cyan-400/10 text-cyan-300"
-                          : "border-white/10 text-white/45 hover:bg-white/5 hover:text-white"
+                          : "border-white/10 bg-white/[0.02] text-white/50 hover:bg-white/5 hover:text-white"
                       }`}
                     >
                       {item}
@@ -309,35 +305,36 @@ export default function CompanyCampaignsPage() {
                 <div className="relative flex-1 xl:w-72">
                   <Search
                     size={17}
-                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/25"
+                    className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/30"
                   />
 
                   <input
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Search campaigns..."
-                    className="h-10 w-full rounded-xl border border-white/10 bg-black/20 pl-10 pr-4 text-sm outline-none placeholder:text-white/20 focus:border-cyan-400/30"
+                    className="h-10 w-full rounded-xl border border-white/10 bg-black/20 pl-10 pr-4 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-400/30"
                   />
                 </div>
 
-                <button className="flex h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-sm text-white/45 hover:bg-white/5 hover:text-white">
+                <button className="flex h-10 items-center gap-2 rounded-xl border border-white/10 px-3 text-sm text-white/50 hover:bg-white/5 hover:text-white">
                   <Filter size={16} />
-                  <span className="hidden sm:inline">Filters</span>
+                  <span className="hidden sm:inline">Filter</span>
                 </button>
               </div>
             </div>
           </div>
 
+          {/* Campaign list */}
           <div className="mt-6 space-y-4">
             {filteredCampaigns.map((campaign) => (
               <Link
                 key={campaign.id}
-                href={`/dashboard/company/campaigns/${campaign.id}`}
-                className="group block rounded-2xl border border-white/10 bg-white/[0.025] p-6 transition hover:border-cyan-400/20 hover:bg-white/[0.04]"
+                href={`/dashboard/influencer/campaigns/${campaign.id}`}
+                className="group block rounded-2xl border border-white/10 bg-white/[0.025] p-5 transition hover:border-cyan-400/20 hover:bg-white/[0.04]"
               >
                 <div className="flex flex-col gap-6 xl:flex-row xl:items-center">
-                  <div className="flex min-w-0 flex-1 gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-cyan-400/10 text-cyan-300">
+                  <div className="flex min-w-0 flex-1 items-start gap-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-cyan-400/10 bg-cyan-400/10 text-cyan-300">
                       <BriefcaseBusiness size={20} />
                     </div>
 
@@ -348,20 +345,20 @@ export default function CompanyCampaignsPage() {
                         </h3>
 
                         <span
-                          className={`rounded-full border px-2.5 py-1 text-[10px] ${statusStyles[campaign.status]}`}
+                          className={`rounded-full border px-2.5 py-1 text-[11px] ${statusStyles[campaign.status]}`}
                         >
                           {campaign.status}
                         </span>
                       </div>
 
-                      <p className="mt-2 max-w-xl text-sm leading-6 text-white/40">
-                        {campaign.description}
+                      <p className="mt-1 text-sm text-white/45">
+                        {campaign.client} · {campaign.category}
                       </p>
 
-                      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/30">
+                      <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-white/35">
                         <span className="flex items-center gap-1.5">
-                          <Users size={14} />
-                          {campaign.creators} creators
+                          <CalendarDays size={14} />
+                          {campaign.deadline}
                         </span>
 
                         <span className="flex items-center gap-1.5">
@@ -370,13 +367,8 @@ export default function CompanyCampaignsPage() {
                         </span>
 
                         <span className="flex items-center gap-1.5">
-                          <TrendingUp size={14} />
-                          {campaign.reach} estimated reach
-                        </span>
-
-                        <span className="flex items-center gap-1.5">
-                          <CalendarDays size={14} />
-                          {campaign.deadline}
+                          <CheckCircle2 size={14} />
+                          {campaign.deliverables} deliverables
                         </span>
                       </div>
                     </div>
@@ -384,11 +376,8 @@ export default function CompanyCampaignsPage() {
 
                   <div className="w-full xl:w-64">
                     <div className="mb-2 flex items-center justify-between text-xs">
-                      <span className="text-white/30">
-                        Progress
-                      </span>
-
-                      <span className="text-white/65">
+                      <span className="text-white/35">Campaign progress</span>
+                      <span className="text-white/70">
                         {campaign.progress}%
                       </span>
                     </div>
@@ -396,22 +385,50 @@ export default function CompanyCampaignsPage() {
                     <div className="h-2 overflow-hidden rounded-full bg-white/5">
                       <div
                         className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-violet-500"
-                        style={{
-                          width: `${campaign.progress}%`,
-                        }}
+                        style={{ width: `${campaign.progress}%` }}
                       />
                     </div>
                   </div>
 
-                  <ChevronRight
-                    size={20}
-                    className="shrink-0 text-white/20 transition group-hover:translate-x-1 group-hover:text-cyan-300"
-                  />
+                  <div className="flex items-center justify-between gap-4 xl:w-48">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-[10px] font-semibold">
+                        {campaign.managerInitials}
+                      </div>
+
+                      <div>
+                        <p className="text-[11px] text-white/30">
+                          Campaign manager
+                        </p>
+                        <p className="text-xs text-white/70">
+                          {campaign.manager}
+                        </p>
+                      </div>
+                    </div>
+
+                    <ChevronRight
+                      size={19}
+                      className="text-white/25 transition group-hover:translate-x-1 group-hover:text-cyan-300"
+                    />
+                  </div>
                 </div>
               </Link>
             ))}
+
+            {filteredCampaigns.length === 0 && (
+              <div className="rounded-2xl border border-dashed border-white/10 py-20 text-center">
+                <Search
+                  size={28}
+                  className="mx-auto text-white/20"
+                />
+                <p className="mt-4 text-sm text-white/50">
+                  No campaigns match your search.
+                </p>
+              </div>
+            )}
           </div>
 
+          {/* Bottom note */}
           <div className="mt-8 flex items-start gap-3 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.03] p-5">
             <Clock3
               size={18}
@@ -420,12 +437,13 @@ export default function CompanyCampaignsPage() {
 
             <div>
               <p className="text-sm font-medium">
-                Prototype campaign workspace
+                Campaign data is currently a prototype
               </p>
 
-              <p className="mt-1 text-xs leading-5 text-white/35">
-                Campaign budgets, reach, statuses, and performance values
-                are mock data for the current website prototype.
+              <p className="mt-1 text-xs leading-5 text-white/40">
+                Statuses, earnings, deadlines, and campaign activity
+                shown here use mock data. Production values will come
+                from the InfluxBridge campaign system.
               </p>
             </div>
           </div>
@@ -453,7 +471,7 @@ function SidebarLink({
       href={href}
       className={`flex items-center justify-between rounded-xl px-3 py-3 text-sm transition ${
         active
-          ? "bg-cyan-400/10 text-cyan-300"
+          ? "border border-cyan-400/10 bg-cyan-400/10 text-cyan-300"
           : "text-white/45 hover:bg-white/5 hover:text-white"
       }`}
     >
@@ -484,15 +502,22 @@ function StatCard({
 }) {
   return (
     <div className="rounded-2xl border border-white/10 bg-white/[0.025] p-5">
-      <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-300">
-        {icon}
+      <div className="flex items-center justify-between">
+        <div className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-cyan-300">
+          {icon}
+        </div>
+
+        <MoreHorizontal size={17} className="text-white/20" />
       </div>
 
       <p className="mt-5 text-xs text-white/35">{label}</p>
 
-      <p className="mt-1 text-2xl font-semibold">{value}</p>
-
-      <p className="mt-1 text-[10px] text-white/20">{detail}</p>
+      <div className="mt-1 flex items-end gap-2">
+        <span className="text-2xl font-semibold">{value}</span>
+        <span className="pb-1 text-[10px] text-white/25">
+          {detail}
+        </span>
+      </div>
     </div>
   );
 }
