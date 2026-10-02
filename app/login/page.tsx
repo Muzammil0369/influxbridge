@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [role, setRole] = useState<Role>("company");
   const [showPassword, setShowPassword] = useState(false);
   const [remember, setRemember] = useState(false);
-  const [email, setEmail] = useState("");0
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [submitted, setSubmitted] = useState(false);
 
