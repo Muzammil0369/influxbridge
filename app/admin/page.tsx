@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { getCampaigns, getInfluencers, getLeads } from "@/lib/platform";
 import {
   Activity,
   ArrowRight,
@@ -13,25 +14,11 @@ import {
   Users,
 } from "lucide-react";
 
-const leads = [
-  ["AtlasPay", "Pakistan market entry", "$20K–$30K", "New"],
-  ["Vertex Markets", "Trading creator campaign", "$10K–$15K", "Qualified"],
-  ["NovaChain", "Web3 education campaign", "$8K–$12K", "Proposal Sent"],
-];
-
-const campaigns = [
-  ["Pakistan Market Launch", "NovaPay", "Active", "68%", "8 creators"],
-  ["Digital Asset Awareness", "VaultX", "In Review", "91%", "5 creators"],
-  ["Creator Launch Series", "Finora", "Completed", "100%", "6 creators"],
-];
-
-const creators = [
-  ["Ayesha Khan", "@ayeshaknows", "Fintech & Education", "18 min ago"],
-  ["Hamza Rauf", "@hamzarauf", "Trading & Web3", "1 hr ago"],
-  ["Mariam Shah", "@mariamshah", "Lifestyle & Tech", "3 hrs ago"],
-];
-
 export default function AdminOverview() {
+  const [leads,setLeads] = useState<any[]>([]);
+  const [campaigns,setCampaigns] = useState<any[]>([]);
+  const [creators,setCreators] = useState<any[]>([]);
+  useEffect(() => { const load=()=>{ setLeads(getLeads().slice(0,3).map(x=>[x.company,x.request,`${x.budget.toLocaleString()}`,x.status])); setCampaigns(getCampaigns().map(x=>[x.name,x.client,x.status,`${x.progress}%`,`${x.creators} creators`])); setCreators(getInfluencers().filter(x=>x.status==="Pending Review").slice(0,3).map(x=>[x.name,x.handle,x.niche,"Pending review"])); }; load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
   return (
     <>
       <section className="grid gap-6 xl:grid-cols-[1.35fr_.65fr]">
