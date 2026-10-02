@@ -16,6 +16,7 @@ import {
   Users,
   X,
 } from "lucide-react";
+import { sendMessage as sendPlatformMessage } from "@/lib/platform";
 import { useState } from "react";
 
 type Conversation = {
@@ -106,6 +107,8 @@ export default function InfluencerMessagesPage() {
     const value = draft.trim();
 
     if (!value) return;
+
+    sendPlatformMessage("conv-novapay-launch", "influencer", "Ahmed Malik", value);
 
     setMessages((current) => [
       ...current,
