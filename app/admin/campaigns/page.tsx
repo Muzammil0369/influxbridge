@@ -7,6 +7,7 @@ type Row = Record<string, string>;
 
 const rows: Row[] = [{"campaign":"Pakistan Market Launch","company":"NovaPay","status":"Active","progress":"68%","creators":"8"},{"campaign":"Digital Asset Awareness","company":"VaultX","status":"In Review","progress":"91%","creators":"5"},{"campaign":"Creator Launch Series","company":"Finora","status":"Completed","progress":"100%","creators":"6"}];
 const filters = ["All","Active","In Review","Completed"];
+const title = { eyebrow: "Campaign Operations", heading: "Campaigns", sub: "Monitor active work, creator assignments, delivery progress, and completion." };
 
 export default function AdminSectionPage() {
   const [query, setQuery] = useState("");
