@@ -6,12 +6,18 @@ import { Filter, MoreHorizontal, Search } from "lucide-react";
 
 type Row = Record<string, string>;
 
-const [rows,setRows] = useState<Row[]>([]);
-  useEffect(() => { const load = () => setRows(getLeads().map((x) => ({ company:x.company, request:x.request, budget:`${x.budget.toLocaleString()}`, status:x.status, received:x.received }))); load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
 const filters = ["All","New","Qualified","Proposal Sent"];
 const title = { eyebrow: "Business Development", heading: "Leads", sub: "Review inbound opportunities, qualify prospects, and track proposal progress." };
 
 export default function AdminSectionPage() {
+  const [rows, setRows] = useState<Row[]>([]);
+  useEffect(() => {
+    const load = () => setRows(    getLeads().map((x) => ({ company:x.company, request:x.request, budget:`${x.budget.toLocaleString()}`, status:x.status, received:x.received })));
+    load();
+    const h = () => load();
+    window.addEventListener("influxbridge:store", h);
+    return () => window.removeEventListener("influxbridge:store", h);
+  }, []);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
   const filtered = useMemo(() => rows.filter((row) =>
