@@ -7,6 +7,7 @@ type Row = Record<string, string>;
 
 const rows: Row[] = [{"company":"AtlasPay","request":"Pakistan market entry campaign","budget":"$20K–$30K","status":"New","received":"24 min ago"},{"company":"Vertex Markets","request":"Trading creator campaign","budget":"$10K–$15K","status":"Qualified","received":"2 hrs ago"},{"company":"NovaChain","request":"Web3 education campaign","budget":"$8K–$12K","status":"Proposal Sent","received":"Yesterday"},{"company":"Orbit Finance","request":"Community growth","budget":"$15K–$20K","status":"New","received":"Yesterday"}];
 const filters = ["All","New","Qualified","Proposal Sent"];
+const title = { eyebrow: "Business Development", heading: "Leads", sub: "Review inbound opportunities, qualify prospects, and track proposal progress." };
 
 export default function AdminSectionPage() {
   const [query, setQuery] = useState("");
