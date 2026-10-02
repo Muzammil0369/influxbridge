@@ -3,7 +3,7 @@
 import { leads as seedLeads, type Lead, type LeadStatus } from "./mock-data/leads";
 import { influencers as seedInfluencers, type Influencer, type InfluencerStatus } from "./mock-data/influencers";
 import { campaigns as seedCampaigns, type Campaign, type CampaignPhase } from "./mock-data/campaigns";
-import { messages as seedMessages, type Message } from "./mock-data/messages";
+import { conversations as seedConversations, messages as seedMessages, type Conversation, type Message } from "./mock-data/messages";
 import { canTransition, leadTransitions, nextCampaignPhase } from "./workflow";
 import { readStore, storeKeys, writeStore } from "./mock-store";
 
@@ -79,6 +79,10 @@ export function advanceCampaign(id: string) {
   };
   saveCampaigns(updated);
   return updated[index];
+}
+
+export function getConversations(): Conversation[] {
+  return seedConversations;
 }
 
 export function getMessages(): Message[] {
