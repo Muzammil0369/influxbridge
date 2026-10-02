@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getMessages } from "@/lib/platform";
 import { Filter, MoreHorizontal, Search } from "lucide-react";
 
 type Row = Record<string, string>;
 
-const rows: Row[] = [{"conversation":"AtlasPay","topic":"Campaign proposal","status":"Unread","lastMessage":"Can we schedule a call this week?","updated":"12 min ago"},{"conversation":"NovaPay","topic":"Pakistan Market Launch","status":"Active","lastMessage":"The revised creator brief is ready.","updated":"1 hr ago"},{"conversation":"Ayesha Khan","topic":"Creator onboarding","status":"Unread","lastMessage":"I uploaded my portfolio.","updated":"3 hrs ago"}];
+const [rows,setRows] = useState<Row[]>([]);
+  useEffect(() => { const load=()=>setRows(getMessages().map(x=>({conversation:x.senderName,topic:x.conversationId,status:x.read?"Active":"Unread",lastMessage:x.body,updated:x.timestamp}))); load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
 const filters = ["All","Unread","Active"];
 const title = { eyebrow: "Communications", heading: "Messages", sub: "Keep company, creator, and campaign conversations organized." };
 
