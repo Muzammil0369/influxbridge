@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { getCampaigns } from "@/lib/platform";
 import {
   ArrowLeft,
   ArrowRight,
@@ -34,47 +35,7 @@ type Campaign = {
   description: string;
 };
 
-const campaigns: Campaign[] = [
-  {
-    id: "novapay-market-launch",
-    name: "Pakistan Market Launch",
-    client: "NovaPay",
-    status: "Active",
-    progress: 68,
-    budget: "$18,500",
-    reach: "4.8M",
-    creators: 8,
-    deadline: "Oct 18, 2026",
-    description:
-      "Influencer-led market awareness campaign for NovaPay's Pakistan launch.",
-  },
-  {
-    id: "fintech-awareness",
-    name: "Fintech Awareness Campaign",
-    client: "NovaPay",
-    status: "In Review",
-    progress: 86,
-    budget: "$12,000",
-    reach: "2.9M",
-    creators: 5,
-    deadline: "Oct 08, 2026",
-    description:
-      "Educational creator campaign focused on fintech awareness and product discovery.",
-  },
-  {
-    id: "creator-growth-q2",
-    name: "Creator Growth Campaign",
-    client: "NovaPay",
-    status: "Completed",
-    progress: 100,
-    budget: "$9,800",
-    reach: "2.1M",
-    creators: 6,
-    deadline: "Sep 14, 2026",
-    description:
-      "Completed creator activation campaign across multiple social platforms.",
-  },
-];
+const campaigns: Campaign[] = getCampaigns().map((x) => ({ id:x.id, name:x.name, client:x.client, status:x.status, progress:x.progress, budget:`$${x.budget.toLocaleString()}`, reach:x.reach, creators:x.creators, deadline:new Date(x.deadline).toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}), description:x.description }));
 
 const filters = ["All", "Active", "In Review", "Completed"] as const;
 
