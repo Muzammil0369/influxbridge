@@ -23,7 +23,7 @@ export default function AdminSectionPage() {
   const filtered = useMemo(() => rows.filter((row) =>
     Object.values(row).join(" ").toLowerCase().includes(query.toLowerCase()) &&
     (filter === "All" || row.status === filter)
-  ), [query, filter]);
+  ), [rows, query, filter]);
 
   return (
     <>
@@ -54,7 +54,7 @@ export default function AdminSectionPage() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-[820px] text-left">
             <thead className="border-b border-white/[0.07] bg-white/[0.015] text-[9px] uppercase tracking-[0.16em] text-white/20">
-              <tr>{Object.keys(rows[0]).map((key) => <th key={key} className="px-5 py-3.5 font-medium">{key}</th>)}<th className="px-5 py-3.5 font-medium">Action</th></tr>
+              <tr>{Object.keys(rows[0] ?? {}).map((key) => <th key={key} className="px-5 py-3.5 font-medium">{key}</th>)}<th className="px-5 py-3.5 font-medium">Action</th></tr>
             </thead>
             <tbody className="divide-y divide-white/[0.055]">
               {filtered.map((row, i) => (
