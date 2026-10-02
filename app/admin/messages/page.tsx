@@ -6,12 +6,18 @@ import { Filter, MoreHorizontal, Search } from "lucide-react";
 
 type Row = Record<string, string>;
 
-const [rows,setRows] = useState<Row[]>([]);
-  useEffect(() => { const load=()=>setRows(getMessages().map(x=>({conversation:x.senderName,topic:x.conversationId,status:x.read?"Active":"Unread",lastMessage:x.body,updated:x.timestamp}))); load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
 const filters = ["All","Unread","Active"];
 const title = { eyebrow: "Communications", heading: "Messages", sub: "Keep company, creator, and campaign conversations organized." };
 
 export default function AdminSectionPage() {
+  const [rows, setRows] = useState<Row[]>([]);
+  useEffect(() => {
+    const load = () => setRows(    getMessages().map(x=>({conversation:x.senderName,topic:x.conversationId,status:x.read?"Active":"Unread",lastMessage:x.body,updated:x.timestamp})));
+    load();
+    const h = () => load();
+    window.addEventListener("influxbridge:store", h);
+    return () => window.removeEventListener("influxbridge:store", h);
+  }, []);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
   const filtered = useMemo(() => rows.filter((row) =>
