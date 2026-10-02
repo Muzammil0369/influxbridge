@@ -7,6 +7,7 @@ type Row = Record<string, string>;
 
 const rows: Row[] = [{"conversation":"AtlasPay","topic":"Campaign proposal","status":"Unread","lastMessage":"Can we schedule a call this week?","updated":"12 min ago"},{"conversation":"NovaPay","topic":"Pakistan Market Launch","status":"Active","lastMessage":"The revised creator brief is ready.","updated":"1 hr ago"},{"conversation":"Ayesha Khan","topic":"Creator onboarding","status":"Unread","lastMessage":"I uploaded my portfolio.","updated":"3 hrs ago"}];
 const filters = ["All","Unread","Active"];
+const title = { eyebrow: "Communications", heading: "Messages", sub: "Keep company, creator, and campaign conversations organized." };
 
 export default function AdminSectionPage() {
   const [query, setQuery] = useState("");
