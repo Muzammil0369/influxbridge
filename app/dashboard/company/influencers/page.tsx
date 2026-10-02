@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { getInfluencers } from "@/lib/platform";
 
 type Creator = {
   slug: string;
@@ -33,65 +34,7 @@ type Creator = {
   featured?: boolean;
 };
 
-const creators: Creator[] = [
-  {
-    slug: "ahmed-malik",
-    name: "Ahmed Malik",
-    initials: "AM",
-    niche: "Fintech & Web3",
-    followers: "182K",
-    engagement: "5.8%",
-    location: "Pakistan",
-    platforms: "Instagram · YouTube · X",
-    match: 96,
-    featured: true,
-  },
-  {
-    slug: "ayesha-khan",
-    name: "Ayesha Khan",
-    initials: "AK",
-    niche: "Finance & Lifestyle",
-    followers: "245K",
-    engagement: "6.4%",
-    location: "Pakistan",
-    platforms: "Instagram · TikTok",
-    match: 92,
-    featured: true,
-  },
-  {
-    slug: "hamza-trades",
-    name: "Hamza Trades",
-    initials: "HT",
-    niche: "Trading & Markets",
-    followers: "118K",
-    engagement: "7.1%",
-    location: "Pakistan",
-    platforms: "YouTube · X",
-    match: 89,
-  },
-  {
-    slug: "sara-digital",
-    name: "Sara Digital",
-    initials: "SD",
-    niche: "Technology",
-    followers: "94K",
-    engagement: "5.2%",
-    location: "Pakistan",
-    platforms: "Instagram · YouTube",
-    match: 86,
-  },
-  {
-    slug: "usman-web3",
-    name: "Usman Web3",
-    initials: "UW",
-    niche: "Web3 & Crypto",
-    followers: "76K",
-    engagement: "8.2%",
-    location: "Pakistan",
-    platforms: "X · YouTube",
-    match: 84,
-  },
-];
+const creators: Creator[] = getInfluencers().map((x) => ({ slug:x.slug, name:x.name, initials:x.name.split(" ").map((n)=>n[0]).join(""), niche:x.niche, followers:x.followers, engagement:x.engagement, location:x.location, platforms:x.platforms.join(" · "), match:x.matchScore, featured:x.status==="Approved" }));
 
 export default function CompanyInfluencersPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
