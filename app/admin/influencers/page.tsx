@@ -6,12 +6,18 @@ import { Filter, MoreHorizontal, Search } from "lucide-react";
 
 type Row = Record<string, string>;
 
-const [rows,setRows] = useState<Row[]>([]);
-  useEffect(() => { const load=()=>setRows(getInfluencers().map(x=>({creator:x.name,handle:x.handle,niche:x.niche,status:x.status,location:x.location}))); load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
 const filters = ["All","Pending Review","Approved"];
 const title = { eyebrow: "Creator Operations", heading: "Influencers", sub: "Review creator applications, verification status, and network readiness." };
 
 export default function AdminSectionPage() {
+  const [rows, setRows] = useState<Row[]>([]);
+  useEffect(() => {
+    const load = () => setRows(    getInfluencers().map(x=>({creator:x.name,handle:x.handle,niche:x.niche,status:x.status,location:x.location})));
+    load();
+    const h = () => load();
+    window.addEventListener("influxbridge:store", h);
+    return () => window.removeEventListener("influxbridge:store", h);
+  }, []);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
   const filtered = useMemo(() => rows.filter((row) =>
