@@ -24,33 +24,9 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { getCampaigns } from "@/lib/platform";
 
-const campaigns = [
-  {
-    name: "Fintech Launch Campaign",
-    company: "NovaPay",
-    status: "Active",
-    progress: 68,
-    deadline: "Sep 28, 2026",
-    deliverables: "3 / 4",
-  },
-  {
-    name: "Web3 Education Series",
-    company: "Orbit Labs",
-    status: "Pending Review",
-    progress: 90,
-    deadline: "Oct 04, 2026",
-    deliverables: "3 / 3",
-  },
-  {
-    name: "Trading Platform Awareness",
-    company: "Vertex Markets",
-    status: "Completed",
-    progress: 100,
-    deadline: "Sep 10, 2026",
-    deliverables: "5 / 5",
-  },
-];
+const campaigns = getCampaigns().map((x) => ({ name:x.name, company:x.client, status:x.status, progress:x.progress, deadline:new Date(x.deadline).toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}), deliverables:`${x.creators} creators` }));
 
 const activities = [
   {
