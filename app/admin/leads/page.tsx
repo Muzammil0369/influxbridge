@@ -1,11 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { getLeads } from "@/lib/platform";
 import { Filter, MoreHorizontal, Search } from "lucide-react";
 
 type Row = Record<string, string>;
 
-const rows: Row[] = [{"company":"AtlasPay","request":"Pakistan market entry campaign","budget":"$20K–$30K","status":"New","received":"24 min ago"},{"company":"Vertex Markets","request":"Trading creator campaign","budget":"$10K–$15K","status":"Qualified","received":"2 hrs ago"},{"company":"NovaChain","request":"Web3 education campaign","budget":"$8K–$12K","status":"Proposal Sent","received":"Yesterday"},{"company":"Orbit Finance","request":"Community growth","budget":"$15K–$20K","status":"New","received":"Yesterday"}];
+const [rows,setRows] = useState<Row[]>([]);
+  useEffect(() => { const load = () => setRows(getLeads().map((x) => ({ company:x.company, request:x.request, budget:`${x.budget.toLocaleString()}`, status:x.status, received:x.received }))); load(); const h=()=>load(); window.addEventListener("influxbridge:store",h); return ()=>window.removeEventListener("influxbridge:store",h); }, []);
 const filters = ["All","New","Qualified","Proposal Sent"];
 const title = { eyebrow: "Business Development", heading: "Leads", sub: "Review inbound opportunities, qualify prospects, and track proposal progress." };
 
