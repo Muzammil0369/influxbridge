@@ -23,6 +23,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { getCampaigns } from "@/lib/platform";
 
 type CampaignStatus = "Active" | "In Review" | "Completed";
 
@@ -39,47 +40,7 @@ type Campaign = {
   description: string;
 };
 
-const campaigns: Campaign[] = [
-  {
-    id: "novapay-market-launch",
-    title: "Pakistan Market Launch",
-    category: "Fintech",
-    status: "Active",
-    creators: 8,
-    budget: "$12,500",
-    reach: "4.8M",
-    deadline: "Oct 18, 2026",
-    progress: 68,
-    description:
-      "Creator-led awareness campaign supporting NovaPay's Pakistan market entry.",
-  },
-  {
-    id: "vaultx-awareness",
-    title: "Digital Asset Awareness",
-    category: "Web3",
-    status: "In Review",
-    creators: 5,
-    budget: "$7,800",
-    reach: "2.1M",
-    deadline: "Oct 09, 2026",
-    progress: 91,
-    description:
-      "Educational creator campaign focused on responsible digital asset awareness.",
-  },
-  {
-    id: "finora-creator-series",
-    title: "Creator Launch Series",
-    category: "Fintech",
-    status: "Completed",
-    creators: 6,
-    budget: "$9,200",
-    reach: "3.4M",
-    deadline: "Sep 21, 2026",
-    progress: 100,
-    description:
-      "Multi-creator launch series introducing Finora to a Pakistani audience.",
-  },
-];
+const campaigns: Campaign[] = getCampaigns().map((x) => ({ id:x.id, title:x.name, category:x.category, status:x.status, creators:x.creators, budget:`$${x.budget.toLocaleString()}`, reach:x.reach, deadline:new Date(x.deadline).toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}), progress:x.progress, description:x.description }));
 
 const statusStyles: Record<CampaignStatus, string> = {
   Active: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
