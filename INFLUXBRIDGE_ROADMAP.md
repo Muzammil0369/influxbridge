@@ -37,11 +37,11 @@ The platform is intended to become the agency's internal operating system while 
 
 # 2. Founder / Team Responsibilities
 
-| Person | Primary responsibility |
-|---|---|
-| Tahir | Business development, exchange relationships, networking, sales, communities, events |
-| Muzammil | Technology, product, web/app development, automation |
-| Huzaifa | Cybersecurity, architecture, platform operations |
+| Person   | Primary responsibility                                                               |
+| -------- | ------------------------------------------------------------------------------------ |
+| Tahir    | Business development, exchange relationships, networking, sales, communities, events |
+| Muzammil | Technology, product, web/app development, automation                                 |
+| Huzaifa  | Cybersecurity, architecture, platform operations                                     |
 
 Founder decisions still to be finalized separately include investment, equity, salaries/commissions, expenses, decision rights, and project economics.
 
@@ -979,28 +979,28 @@ Before production launch:
 
 # 29. Current Progress
 
-| Area | Status |
-|---|---|
-| Business model | COMPLETE |
-| Product architecture | COMPLETE |
-| Public website | COMPLETE |
-| Three.js experience | COMPLETE |
-| Influencer onboarding UI | COMPLETE |
-| Influencer dashboard | COMPLETE |
-| Company dashboard | COMPLETE |
-| Admin portal | COMPLETE |
-| Mock workflow | COMPLETE |
-| Frontend QA | COMPLETE |
-| Security architecture | IN PROGRESS |
-| Supabase schema | NOT STARTED |
-| Supabase project | NOT STARTED |
-| Real authentication | NOT STARTED |
-| RLS | NOT STARTED |
-| Real backend | NOT STARTED |
-| Real storage | NOT STARTED |
-| Real messaging | NOT STARTED |
-| Real analytics | NOT STARTED |
-| Payments | NOT STARTED |
+| Area                     | Status      |
+| ------------------------ | ----------- |
+| Business model           | COMPLETE    |
+| Product architecture     | COMPLETE    |
+| Public website           | COMPLETE    |
+| Three.js experience      | COMPLETE    |
+| Influencer onboarding UI | COMPLETE    |
+| Influencer dashboard     | COMPLETE    |
+| Company dashboard        | COMPLETE    |
+| Admin portal             | COMPLETE    |
+| Mock workflow            | COMPLETE    |
+| Frontend QA              | COMPLETE    |
+| Security architecture    | IN PROGRESS |
+| Supabase schema          | NOT STARTED |
+| Supabase project         | NOT STARTED |
+| Real authentication      | NOT STARTED |
+| RLS                      | NOT STARTED |
+| Real backend             | NOT STARTED |
+| Real storage             | NOT STARTED |
+| Real messaging           | NOT STARTED |
+| Real analytics           | NOT STARTED |
+| Payments                 | NOT STARTED |
 
 ---
 
