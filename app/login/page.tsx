@@ -21,7 +21,6 @@ type Role = "company" | "influencer";
 export default function LoginPage() {
   const [role, setRole] = useState<Role>("company");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
