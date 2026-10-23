@@ -50,8 +50,14 @@ export default function AdminInfluencersPage() {
 
   async function review(id: string, verification_status: Influencer["verification_status"]) {
     setBusyId(id);
+    const profile_status = verification_status === "APPROVED"
+      ? "ACTIVE"
+      : verification_status === "REJECTED"
+        ? "REJECTED"
+        : "SUBMITTED";
     const { error: updateError } = await supabase.from("influencer_profiles")
-      .update({ verification_status, updated_at: new Date().toISOString() }).eq("id", id);
+      .update({ verification_status, profile_status, updated_at: new Date().toISOString() })
+      .eq("id", id);
     if (updateError) setError(updateError.message);
     else { setError(""); await load(); }
     setBusyId("");
