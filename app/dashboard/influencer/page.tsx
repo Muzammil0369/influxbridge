@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { ArrowRight, Bell, BriefcaseBusiness, Clock3, DollarSign, FileText, LayoutDashboard, LoaderCircle, LogOut, MessageCircle, RefreshCw, Settings, UserRound, Users } from "lucide-react";
+import { ArrowRight, Bell, BriefcaseBusiness, Clock3, DollarSign, FileText, LayoutDashboard, LoaderCircle, LogOut, Menu, RefreshCw, UserRound, Users, X } from "lucide-react";
 
 type Row = Record<string, any>;
 const money = (value: unknown) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(Number(value || 0));
@@ -11,7 +11,7 @@ const dateLabel = (value: unknown) => value ? new Date(String(value)).toLocaleDa
 
 export default function InfluencerDashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);\n  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [error, setError] = useState("");
   const [user, setUser] = useState<Row | null>(null);
   const [profile, setProfile] = useState<Row | null>(null);
@@ -74,7 +74,7 @@ export default function InfluencerDashboardPage() {
 
   const fullName = creator?.display_name || profile?.full_name || user?.email?.split("@")[0] || "Creator";
   const avatar = profile?.avatar_url as string | undefined;
-  const status = String(creator?.profile_status || "INCOMPLETE").toUpperCase();
+  const verificationStatus = String(creator?.verification_status || "").toUpperCase();\n  const storedStatus = String(creator?.profile_status || "INCOMPLETE").toUpperCase();\n  const status = verificationStatus === "APPROVED" ? "ACTIVE" : storedStatus;
   const activeCampaigns = campaigns.filter((row) => {
     const c = row.campaigns || row.campaign || row;
     return !["COMPLETED", "CANCELLED", "REJECTED", "ARCHIVED"].includes(String(c.status || row.status || "").toUpperCase());
@@ -93,8 +93,8 @@ export default function InfluencerDashboardPage() {
   return <main className="min-h-screen bg-[#050712] text-white">
     <div className="pointer-events-none fixed inset-0 -z-10"><div className="absolute -left-32 -top-24 h-96 w-96 rounded-full bg-cyan-500/[0.08] blur-[120px]"/><div className="absolute -right-32 top-1/3 h-[32rem] w-[32rem] rounded-full bg-violet-600/[0.08] blur-[150px]"/></div>
     <div className="flex min-h-screen">
-      <aside className="hidden w-64 shrink-0 border-r border-white/10 bg-[#070a15]/80 p-5 lg:flex lg:flex-col">
-        <Link href="/" className="flex items-center gap-3 border-b border-white/10 px-2 pb-6"><img src="/a-logo.png" alt="InfluxBridge" className="h-10 w-10 object-contain"/><span className="text-xs font-bold tracking-[.16em]">INFLUXBRIDGE<span className="mt-1 block text-[9px] font-normal tracking-[.2em] text-white/35">CREATOR PORTAL</span></span></Link>
+      <aside className="hidden w-64 shrink-0 border-r border-white/10 bg-[#070a15]/80 p-5 md:flex md:flex-col">
+        <Link href="/dashboard/influencer" className="flex items-center gap-3 border-b border-white/10 px-2 pb-6"><img src="/a-logo.png" alt="InfluxBridge" className="h-10 w-10 object-contain"/><span className="text-xs font-bold tracking-[.16em]">INFLUXBRIDGE<span className="mt-1 block text-[9px] font-normal tracking-[.2em] text-white/35">CREATOR PORTAL</span></span></Link>
         <p className="mb-3 mt-7 px-2 text-[10px] font-bold uppercase tracking-[.2em] text-white/30">Workspace</p>
         <nav className="space-y-1">
           <SideLink href="/dashboard/influencer" icon={<LayoutDashboard size={16}/>} label="Overview" active/>
