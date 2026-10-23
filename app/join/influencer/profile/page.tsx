@@ -988,9 +988,10 @@ export default function InfluencerProfilePage() {
 
                           <button
                             type="submit"
-                            className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110"
+                            disabled={saving}
+                            className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
                           >
-                            Submit Profile
+                            {saving ? "Submitting profile…" : "Submit Profile"}
                             <ArrowRight
                               size={17}
                               className="transition-transform group-hover:translate-x-1"
