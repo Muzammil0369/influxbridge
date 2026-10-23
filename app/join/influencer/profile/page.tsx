@@ -232,6 +232,11 @@ export default function InfluencerProfilePage() {
       location: `${formData.city.trim()}, ${formData.country}`,
       niche: formData.niche,
       languages: formData.languages,
+      followers_count: Number(formData.followersCount) || 0,
+      rate_usdt: formData.rateUsdt ? Number(formData.rateUsdt) : null,
+      primary_audience_country: formData.primaryAudienceCountry || null,
+      portfolio_url: formData.portfolioUrl.trim() || null,
+      sample_video_url: formData.sampleVideoUrl.trim() || null,
       profile_status: "SUBMITTED",
       updated_at: new Date().toISOString(),
     }, { onConflict: "id" });
