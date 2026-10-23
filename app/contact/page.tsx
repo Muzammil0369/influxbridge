@@ -210,11 +210,11 @@ export default function ContactPage() {
                         <div><label htmlFor="creator_profile" className="mb-2 block text-sm font-semibold text-white/80">Social profile (optional)</label><input id="creator_profile" name="creator_profile" type="url" maxLength={500} className={fieldClass} placeholder="https://instagram.com/yourname" /></div>
                       </div>
                       <div><label htmlFor="creator_message" className="mb-2 block text-sm font-semibold text-white/80">How can we help?</label><textarea id="creator_message" name="creator_message" required minLength={5} maxLength={3000} rows={5} className={textAreaClass} placeholder="Tell us about your inquiry…" /></div>
-                      <button type="submit" {submitError && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{submitError}</p>}
-                      disabled={submitting} className="group flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#8548ef] to-[#168dff] px-6 py-4 text-base font-bold shadow-[0_0_30px_rgba(120,80,255,0.25)] transition hover:brightness-110">
+                      {submitError && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{submitError}</p>}
+                      <button type="submit" disabled={submitting} className="group flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#8548ef] to-[#168dff] px-6 py-4 text-base font-bold shadow-[0_0_30px_rgba(120,80,255,0.25)] transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60">
                         {submitting ? "Sending inquiry…" : "Send influencer inquiry"} <Mail className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </button>
-                      <p className="text-center text-xs leading-5 text-white/35">This opens your device’s email app. If it doesn’t open, email <a className="text-cyan-300 underline underline-offset-4" href="mailto:hello@influxbridge.com">hello@influxbridge.com</a> directly.</p>
+                      <p className="text-center text-xs leading-5 text-white/35">Your inquiry will be saved securely and appear in the InfluxBridge admin Leads workspace.</p>
                     </form>
                   </>
                 )}
