@@ -66,7 +66,12 @@ export default function LoginPage() {
     } else if (profile.role === "COMPANY" && role === "company") {
       router.replace("/dashboard/company");
     } else if (profile.role === "INFLUENCER" && role === "influencer") {
-      router.replace("/dashboard/influencer");
+      const { data: creatorProfile } = await supabase
+        .from("influencer_profiles")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      router.replace(creatorProfile ? "/dashboard/influencer" : "/join/influencer/profile");
     } else {
       await supabase.auth.signOut();
       setErrorMessage("This account does not match the selected workspace.");
