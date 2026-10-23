@@ -1,4 +1,25 @@
 import Link from "next/link";
 import {BriefcaseBusiness,LayoutDashboard,MessageSquare,Users} from "lucide-react";
 import SignOutButton from "./sign-out-button";
-export default function CompanyLayout({children}:{children:React.ReactNode}){return <div className="min-h-screen bg-[#05070d] text-white"><header className="sticky top-0 z-40 border-b border-white/10 bg-[#070a12]/95 backdrop-blur-xl"><div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8"><Link href="/dashboard/company" className="flex items-center gap-3"><span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[.04]"><img src="/a-logo.png" alt="InfluxBridge logo" className="h-full w-full object-contain"/></span><span><span className="block text-sm font-semibold">InfluxBridge</span><span className="block text-[10px] uppercase tracking-[.18em] text-white/35">Company portal</span></span></Link><nav aria-label="Company navigation" className="flex flex-wrap items-center gap-1">{[{href:"/dashboard/company",label:"Overview",icon:<LayoutDashboard size={16}/>},{href:"/dashboard/company/campaigns",label:"Campaigns",icon:<BriefcaseBusiness size={16}/>},{href:"/dashboard/company/influencers",label:"Creator network",icon:<Users size={16}/>},{href:"/dashboard/company/messages",label:"Messages",icon:<MessageSquare size={16}/>}].map(x=><Link key={x.href} href={x.href} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-white/55 transition hover:bg-white/5 hover:text-cyan-300 sm:text-sm">{x.icon}<span>{x.label}</span></Link>)}</nav></div></header>{children}</div>}
+
+export default function CompanyLayout({children}:{children:React.ReactNode}){
+  return <div className="min-h-screen bg-[#05070d] text-white">
+    <header className="sticky top-0 z-40 border-b border-white/10 bg-[#070a12]/95 backdrop-blur-xl">
+      <div className="mx-auto flex max-w-[1500px] flex-wrap items-center justify-between gap-4 px-5 py-4 sm:px-8">
+        <Link href="/dashboard/company" className="flex items-center gap-3">
+          <span className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[.04]">
+            <img src="/a-logo.png" alt="InfluxBridge logo" className="h-full w-full object-contain"/>
+          </span>
+          <span><span className="block text-sm font-semibold">InfluxBridge</span><span className="block text-[10px] uppercase tracking-[.18em] text-white/35">Company portal</span></span>
+        </Link>
+        <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3">
+          <nav aria-label="Company navigation" className="flex flex-wrap items-center gap-1">
+            {[{href:"/dashboard/company",label:"Overview",icon:<LayoutDashboard size={16}/>},{href:"/dashboard/company/campaigns",label:"Campaigns",icon:<BriefcaseBusiness size={16}/>},{href:"/dashboard/company/influencers",label:"Creator network",icon:<Users size={16}/>},{href:"/dashboard/company/messages",label:"Messages",icon:<MessageSquare size={16}/>}].map(x=><Link key={x.href} href={x.href} className="inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs text-white/55 transition hover:bg-white/5 hover:text-cyan-300 sm:text-sm">{x.icon}<span>{x.label}</span></Link>)}
+          </nav>
+          <SignOutButton/>
+        </div>
+      </div>
+    </header>
+    {children}
+  </div>
+}
