@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -62,6 +63,9 @@ const steps = [
 export default function InfluencerProfilePage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [attempted, setAttempted] = useState(false);
 
@@ -86,6 +90,48 @@ export default function InfluencerProfilePage() {
     sampleVideoUrl: "",
   });
 
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSavedProfile() {
+      const supabase = createClient();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const [profileResult, socialResult] = await Promise.all([
+        supabase.from("influencer_profiles").select("*").eq("id", auth.user.id).maybeSingle(),
+        supabase.from("social_accounts").select("*").eq("influencer_id", auth.user.id),
+      ]);
+      if (cancelled || !profileResult.data) return;
+      const saved = profileResult.data as Record<string, any>;
+      const socials = socialResult.data || [];
+      const socialValue = (platforms: string[]) => {
+        const match = socials.find((item: Record<string, any>) => platforms.includes(String(item.platform || "").toUpperCase()));
+        return String(match?.profile_url || match?.username || "");
+      };
+      const locationParts = String(saved.location || "").split(",");
+      setFormData({
+        creatorName: String(saved.display_name || ""),
+        bio: String(saved.bio || ""),
+        country: locationParts.length > 1 ? locationParts.slice(1).join(",").trim() : String(saved.location || ""),
+        city: locationParts.length > 1 ? locationParts[0].trim() : "",
+        niche: String(saved.niche || ""),
+        languages: Array.isArray(saved.languages) ? saved.languages : [],
+        twitter: socialValue(["X", "TWITTER"]),
+        youtube: socialValue(["YOUTUBE", "YOUTUBE_CHANNEL"]),
+        instagram: socialValue(["INSTAGRAM"]),
+        tiktok: socialValue(["TIKTOK"]),
+        followersCount: saved.followers_count == null ? "" : String(saved.followers_count),
+        rateUsdt: saved.rate_usdt == null ? "" : String(saved.rate_usdt),
+        primaryAudienceCountry: String(saved.primary_audience_country || ""),
+        portfolioUrl: String(saved.portfolio_url || ""),
+        sampleVideoUrl: String(saved.sample_video_url || ""),
+      });
+      const { data: account } = await supabase.from("profiles").select("avatar_url").eq("id", auth.user.id).maybeSingle();
+      if (!cancelled && account?.avatar_url) setProfileImage(String(account.avatar_url));
+    }
+    void loadSavedProfile();
+    return () => { cancelled = true; };
+  }, []);
+
   const updateField = (
     field: keyof typeof formData,
     value: string | string[]
@@ -105,7 +151,10 @@ export default function InfluencerProfilePage() {
       return;
     }
 
+    if (!["image/png", "image/jpeg", "image/webp", "image/avif"].includes(file.type)) return;
+    if (profileImage) URL.revokeObjectURL(profileImage);
     const imageUrl = URL.createObjectURL(file);
+    setProfileImageFile(file);
     setProfileImage(imageUrl);
   };
 
@@ -115,6 +164,7 @@ export default function InfluencerProfilePage() {
     }
 
     setProfileImage(null);
+    setProfileImageFile(null);
   };
 
   const toggleLanguage = (language: string) => {
@@ -183,14 +233,92 @@ export default function InfluencerProfilePage() {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAttempted(true);
+    if (!step1Valid || !hasSocial || !step3Valid || !step4Valid || saving) return;
 
-    if (!step1Valid || !hasSocial || !step3Valid || !step4Valid) {
+    setSaving(true);
+    setSaveError("");
+    const supabase = createClient();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (authError || !user) {
+      setSaving(false);
+      setSaveError("Please log in with the account you created, then return to complete your creator profile.");
       return;
     }
 
+    if (profileImageFile) {
+      const extension = profileImageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("influencer-avatars").upload(path, profileImageFile, { upsert: true, contentType: profileImageFile.type });
+      if (uploadError) {
+        setSaving(false);
+        setSaveError(`Profile photo upload failed: ${uploadError.message}`);
+        return;
+      }
+      const publicAvatarUrl = supabase.storage.from("influencer-avatars").getPublicUrl(path).data.publicUrl;
+      const { error: avatarError } = await supabase.from("profiles").update({ avatar_url: publicAvatarUrl, updated_at: new Date().toISOString() }).eq("id", user.id);
+      if (avatarError) {
+        setSaving(false);
+        setSaveError(`Photo uploaded, but saving your account image failed: ${avatarError.message}`);
+        return;
+      }
+    }
+
+    const { data: existingCreator } = await supabase.from("influencer_profiles")
+      .select("profile_status, verification_status")
+      .eq("id", user.id)
+      .maybeSingle();
+    const nextProfileStatus = String(existingCreator?.profile_status || "").toUpperCase() === "ACTIVE" ? "ACTIVE" : "SUBMITTED";
+    const { error: profileError } = await supabase.from("influencer_profiles").upsert({
+      id: user.id,
+      display_name: formData.creatorName.trim(),
+      bio: formData.bio.trim(),
+      location: `${formData.city.trim()}, ${formData.country}`,
+      niche: formData.niche,
+      languages: formData.languages,
+      followers_count: Number(formData.followersCount) || 0,
+      rate_usdt: formData.rateUsdt ? Number(formData.rateUsdt) : null,
+      primary_audience_country: formData.primaryAudienceCountry || null,
+      portfolio_url: formData.portfolioUrl.trim() || null,
+      sample_video_url: formData.sampleVideoUrl.trim() || null,
+      profile_status: nextProfileStatus,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "id" });
+    if (profileError) {
+      setSaving(false);
+      setSaveError(`Could not save your creator profile: ${profileError.message}`);
+      return;
+    }
+
+    const socials = [
+      { platform: "X", value: formData.twitter },
+      { platform: "YOUTUBE", value: formData.youtube },
+      { platform: "INSTAGRAM", value: formData.instagram },
+      { platform: "TIKTOK", value: formData.tiktok },
+    ].filter((item) => item.value.trim());
+    for (const social of socials) {
+      const raw = social.value.trim();
+      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      let username = raw.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[/?#]/)[0];
+      username = username.split("@").pop() || username;
+      const { error: socialError } = await supabase.from("social_accounts").upsert({
+        influencer_id: user.id,
+        platform: social.platform,
+        username,
+        profile_url: url,
+        followers_count: 0,
+      }, { onConflict: "influencer_id,platform" });
+      if (socialError) {
+        setSaving(false);
+        setSaveError(`Profile saved, but a social link could not be saved: ${socialError.message}`);
+        return;
+      }
+    }
+
+    setSaving(false);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -217,7 +345,7 @@ export default function InfluencerProfilePage() {
       {/* Header */}
       <header className="relative z-20 border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/dashboard/influencer" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
               <img
                 src="/a-logo.png"
@@ -237,7 +365,7 @@ export default function InfluencerProfilePage() {
           </Link>
 
           <Link
-            href="/"
+            href="/dashboard/influencer"
             className="group flex items-center gap-2 text-sm text-white/55 transition hover:text-white"
           >
             <ArrowLeft
@@ -374,6 +502,7 @@ export default function InfluencerProfilePage() {
               <div>
                 <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-8">
                   <form onSubmit={handleSubmit}>
+                    {saveError && <p role="alert" className="mb-5 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300">{saveError}</p>}
                     {/* STEP 1 */}
                     {currentStep === 1 && (
                       <div className="space-y-7">
@@ -988,9 +1117,10 @@ export default function InfluencerProfilePage() {
 
                           <button
                             type="submit"
-                            className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110"
+                            disabled={saving}
+                            className="group flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
                           >
-                            Submit Profile
+                            {saving ? "Submitting profile…" : "Submit Profile"}
                             <ArrowRight
                               size={17}
                               className="transition-transform group-hover:translate-x-1"
@@ -1060,7 +1190,7 @@ export default function InfluencerProfilePage() {
                   </Link>
 
                   <Link
-                    href="/"
+                    href="/dashboard/influencer"
                     className="inline-flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-black/20 px-5 py-3 text-sm font-semibold text-white/60 transition hover:bg-white/[0.05] hover:text-white"
                   >
                     Back to Home
