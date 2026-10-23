@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import { Filter, Search, Users, X, UserRound, LoaderCircle, UserPlus, UserMinus, RefreshCw } from "lucide-react";
+import { Filter, Search, Users, X, UserRound, LoaderCircle, UserPlus, UserMinus, RefreshCw, Plus, CalendarDays } from "lucide-react";
 
 type Campaign = {
   id: string;
@@ -39,6 +39,7 @@ type Creator = {
 };
 type Assignment = { id: string; influencer_id: string; status: string; assigned_at: string };
 type Profile = { id: string; full_name: string | null; avatar_url: string | null };
+type Company = { id: string; name: string };
 
 const title = { eyebrow: "Campaign Operations", heading: "Campaigns", sub: "Monitor campaign delivery and assign verified creators from your live database." };
 const filters = ["All", "ACTIVE", "IN_REVIEW", "COMPLETED"];
@@ -63,6 +64,11 @@ export default function AdminCampaignsPage() {
   const [assignmentBusyId, setAssignmentBusyId] = useState("");
   const [brief, setBrief] = useState({ target_niche: "", target_country: "", target_city: "", target_audience: "", platforms: "", content_formats: "", start_date: "", end_date: "", is_in_person_event: false, budget: "", currency: "USD" });
   const [briefSaving, setBriefSaving] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [companies, setCompanies] = useState<Company[]>([]);
+  const [companyLoading, setCompanyLoading] = useState(false);
+  const [createSaving, setCreateSaving] = useState(false);
+  const [newCampaign, setNewCampaign] = useState({ name: "", company_id: "", budget: "", currency: "USD", deadline: "" });
   const supabase = useMemo(() => createClient(), []);
 
   const load = useCallback(async () => {
@@ -91,6 +97,10 @@ export default function AdminCampaignsPage() {
     `${row.name} ${row.company?.name ?? ""} ${row.phase} ${row.status}`.toLowerCase().includes(query.toLowerCase()) &&
     (filter === "All" || row.status === filter)
   );
+
+  async function openCreateCampaign() { setCreateOpen(true); setError(""); setNotice(""); setCompanyLoading(true); const { data, error: companyError } = await supabase.from("companies").select("id, name").order("name", { ascending: true }); if (companyError) setError("Could not load companies: " + companyError.message); setCompanies((data ?? []) as Company[]); setCompanyLoading(false); }
+
+  async function createCampaign(event: React.FormEvent<HTMLFormElement>) { event.preventDefault(); setError(""); setNotice(""); if (!newCampaign.name.trim() || !newCampaign.company_id) { setError("Enter a campaign name and select the test company."); return; } setCreateSaving(true); const payload = { name: newCampaign.name.trim(), company_id: newCampaign.company_id, budget: newCampaign.budget.trim() ? Number(newCampaign.budget) : null, currency: newCampaign.currency, deadline: newCampaign.deadline || null, status: "IN_REVIEW", phase: "PLANNING" }; const { data, error: insertError } = await supabase.from("campaigns").insert(payload).select("id").single(); if (insertError) { setError("Campaign could not be created: " + insertError.message); } else { setNotice("Campaign created. Open Manage creators to complete its brief and rank creators."); setCreateOpen(false); setNewCampaign({ name: "", company_id: "", budget: "", currency: "USD", deadline: "" }); await load(); } setCreateSaving(false); }
 
   async function updateStatus(id: string, status: Campaign["status"]) {
     setBusyId(id);
@@ -201,8 +211,9 @@ export default function AdminCampaignsPage() {
   return <>
     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
       <div><p className="text-[9px] uppercase tracking-[0.2em] text-white/30">{title.eyebrow}</p><h2 className="mt-2 text-2xl font-semibold tracking-tight">{title.heading}</h2><p className="mt-2 text-xs text-white/40">{title.sub}</p></div>
-      <div className="text-[10px] text-white/30">{filtered.length} live records</div>
+      <div className="flex items-center gap-2"><div className="text-[10px] text-white/30">{filtered.length} live records</div><button onClick={() => void openCreateCampaign()} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-4 py-2.5 text-xs font-semibold text-[#061018] transition hover:bg-cyan-200"><Plus size={14}/> Create campaign</button></div>
     </div>
+    {createOpen && <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/75 p-4 backdrop-blur-sm"><form onSubmit={createCampaign} className="my-auto w-full max-w-xl rounded-3xl border border-white/10 bg-[#0b1220] p-6 shadow-2xl sm:p-8"><div className="flex items-start justify-between gap-4"><div><p className="text-[9px] uppercase tracking-[.18em] text-cyan-300">New campaign</p><h3 className="mt-2 text-xl font-semibold">Create campaign</h3><p className="mt-2 text-xs leading-5 text-white/45">Start with your existing test company. You can complete the matching brief after creating the campaign.</p></div><button type="button" onClick={() => setCreateOpen(false)} className="rounded-xl border border-white/10 p-2 text-white/50 hover:text-white" aria-label="Close create campaign form"><X size={16}/></button></div><div className="mt-6 space-y-4"><label className="block text-xs text-white/55">Campaign name<input required value={newCampaign.name} onChange={e=>setNewCampaign(v=>({...v,name:e.target.value}))} placeholder="e.g. Pakistan launch — test campaign" className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.03] px-3.5 py-3 text-sm text-white outline-none placeholder:text-white/25 focus:border-cyan-300/40"/></label><label className="block text-xs text-white/55">Company<select required value={newCampaign.company_id} onChange={e=>setNewCampaign(v=>({...v,company_id:e.target.value}))} disabled={companyLoading} className="mt-2 w-full rounded-xl border border-white/10 bg-[#080d18] px-3.5 py-3 text-sm text-white outline-none focus:border-cyan-300/40"><option value="">{companyLoading?"Loading companies…":companies.length?"Select a company":"No companies found"}</option>{companies.map(company=><option key={company.id} value={company.id}>{company.name}</option>)}</select>{!companyLoading && companies.length===0 && <span className="mt-2 block text-[10px] text-amber-200/80">No company records are available. Check the Companies table and your admin permissions.</span>}</label><div className="grid gap-4 sm:grid-cols-2"><label className="block text-xs text-white/55">Budget<input type="number" min="0" step="0.01" value={newCampaign.budget} onChange={e=>setNewCampaign(v=>({...v,budget:e.target.value}))} placeholder="Optional" className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.03] px-3.5 py-3 text-sm text-white outline-none placeholder:text-white/25"/></label><label className="block text-xs text-white/55">Currency<select value={newCampaign.currency} onChange={e=>setNewCampaign(v=>({...v,currency:e.target.value}))} className="mt-2 w-full rounded-xl border border-white/10 bg-[#080d18] px-3.5 py-3 text-sm text-white"><option>USD</option><option>USDT</option><option>PKR</option></select></label></div><label className="block text-xs text-white/55">Deadline<input type="date" value={newCampaign.deadline} onChange={e=>setNewCampaign(v=>({...v,deadline:e.target.value}))} className="mt-2 w-full rounded-xl border border-white/10 bg-white/[.03] px-3.5 py-3 text-sm text-white"/></label></div><div className="mt-7 flex justify-end gap-3"><button type="button" onClick={() => setCreateOpen(false)} className="rounded-xl border border-white/10 px-4 py-3 text-xs text-white/65">Cancel</button><button type="submit" disabled={createSaving||companyLoading||companies.length===0} className="inline-flex items-center gap-2 rounded-xl bg-cyan-300 px-5 py-3 text-xs font-semibold text-[#061018] disabled:opacity-50">{createSaving?<LoaderCircle size={14} className="animate-spin"/>:<Plus size={14}/>}Create campaign</button></div></form></div>}
     <div className="mt-6 flex flex-col gap-3 lg:flex-row">
       <div className="relative flex-1"><Search className="absolute left-3.5 top-3 text-white/30" size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search campaigns or companies..." className="w-full rounded-xl border border-white/[0.08] bg-white/[0.025] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-white/25 focus:border-cyan-400/25"/></div>
       <div className="flex gap-2 overflow-x-auto">{filters.map(x=><button key={x} onClick={()=>setFilter(x)} className={`whitespace-nowrap rounded-xl border px-3.5 py-2.5 text-[10px] ${filter===x?"border-cyan-400/20 bg-cyan-400/[0.07] text-cyan-300":"border-white/[0.07] bg-white/[0.02] text-white/40"}`}><Filter size={12} className="mr-1.5 inline"/>{x==="IN_REVIEW"?"In review":x==="ACTIVE"?"Active":x==="COMPLETED"?"Completed":x}</button>)}</div>
