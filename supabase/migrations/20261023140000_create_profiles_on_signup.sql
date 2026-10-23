@@ -1,3 +1,11 @@
+-- Extend creator profiles to store the onboarding details collected by the form.
+alter table public.influencer_profiles
+  add column if not exists followers_count bigint not null default 0,
+  add column if not exists rate_usdt numeric(12,2),
+  add column if not exists primary_audience_country text,
+  add column if not exists portfolio_url text,
+  add column if not exists sample_video_url text;
+
 -- Create application profiles automatically for self-service signups.
 -- The client may request COMPANY or INFLUENCER, but can never self-assign ADMIN.
 create or replace function public.handle_new_auth_user()
