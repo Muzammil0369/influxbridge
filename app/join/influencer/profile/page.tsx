@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
@@ -89,6 +89,48 @@ export default function InfluencerProfilePage() {
     portfolioUrl: "",
     sampleVideoUrl: "",
   });
+
+  useEffect(() => {
+    let cancelled = false;
+    async function loadSavedProfile() {
+      const supabase = createClient();
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) return;
+      const [profileResult, socialResult] = await Promise.all([
+        supabase.from("influencer_profiles").select("*").eq("id", auth.user.id).maybeSingle(),
+        supabase.from("social_accounts").select("*").eq("influencer_id", auth.user.id),
+      ]);
+      if (cancelled || !profileResult.data) return;
+      const saved = profileResult.data as Record<string, any>;
+      const socials = socialResult.data || [];
+      const socialValue = (platforms: string[]) => {
+        const match = socials.find((item: Record<string, any>) => platforms.includes(String(item.platform || "").toUpperCase()));
+        return String(match?.profile_url || match?.username || "");
+      };
+      const locationParts = String(saved.location || "").split(",");
+      setFormData({
+        creatorName: String(saved.display_name || ""),
+        bio: String(saved.bio || ""),
+        country: locationParts.length > 1 ? locationParts.slice(1).join(",").trim() : String(saved.location || ""),
+        city: locationParts.length > 1 ? locationParts[0].trim() : "",
+        niche: String(saved.niche || ""),
+        languages: Array.isArray(saved.languages) ? saved.languages : [],
+        twitter: socialValue(["X", "TWITTER"]),
+        youtube: socialValue(["YOUTUBE", "YOUTUBE_CHANNEL"]),
+        instagram: socialValue(["INSTAGRAM"]),
+        tiktok: socialValue(["TIKTOK"]),
+        followersCount: saved.followers_count == null ? "" : String(saved.followers_count),
+        rateUsdt: saved.rate_usdt == null ? "" : String(saved.rate_usdt),
+        primaryAudienceCountry: String(saved.primary_audience_country || ""),
+        portfolioUrl: String(saved.portfolio_url || ""),
+        sampleVideoUrl: String(saved.sample_video_url || ""),
+      });
+      const { data: account } = await supabase.from("profiles").select("avatar_url").eq("id", auth.user.id).maybeSingle();
+      if (!cancelled && account?.avatar_url) setProfileImage(String(account.avatar_url));
+    }
+    void loadSavedProfile();
+    return () => { cancelled = true; };
+  }, []);
 
   const updateField = (
     field: keyof typeof formData,
@@ -225,6 +267,11 @@ export default function InfluencerProfilePage() {
       }
     }
 
+    const { data: existingCreator } = await supabase.from("influencer_profiles")
+      .select("profile_status, verification_status")
+      .eq("id", user.id)
+      .maybeSingle();
+    const nextProfileStatus = String(existingCreator?.profile_status || "").toUpperCase() === "ACTIVE" ? "ACTIVE" : "SUBMITTED";
     const { error: profileError } = await supabase.from("influencer_profiles").upsert({
       id: user.id,
       display_name: formData.creatorName.trim(),
@@ -237,7 +284,7 @@ export default function InfluencerProfilePage() {
       primary_audience_country: formData.primaryAudienceCountry || null,
       portfolio_url: formData.portfolioUrl.trim() || null,
       sample_video_url: formData.sampleVideoUrl.trim() || null,
-      profile_status: "SUBMITTED",
+      profile_status: nextProfileStatus,
       updated_at: new Date().toISOString(),
     }, { onConflict: "id" });
     if (profileError) {
