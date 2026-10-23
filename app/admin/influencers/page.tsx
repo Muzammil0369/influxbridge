@@ -11,7 +11,18 @@ type Influencer = {
   niche: string | null;
   verification_status: "PENDING" | "APPROVED" | "REJECTED";
   profile_status: string;
+  bio?: string | null;
+  languages?: string[] | null;
+  followers_count?: number | null;
+  rate_usdt?: number | null;
+  primary_audience_country?: string | null;
+  portfolio_url?: string | null;
+  sample_video_url?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 };
+type Social = { id?: string; platform?: string; username?: string; profile_url?: string };
+type Account = { avatar_url?: string | null; full_name?: string | null };
 
 const title = { eyebrow: "Creator Operations", heading: "Influencers", sub: "Review creator applications and manage verification using live profile records." };
 const filters = ["All", "PENDING", "APPROVED", "REJECTED"];
@@ -22,7 +33,11 @@ export default function AdminInfluencersPage() {
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [busyId, setBusyId] = useState("");\n  const [selected, setSelected] = useState<Influencer | null>(null);\n  const [socials, setSocials] = useState<Social[]>([]);\n  const [account, setAccount] = useState<Account | null>(null);\n  const [detailLoading, setDetailLoading] = useState(false);
+  const [busyId, setBusyId] = useState("");
+  const [selected, setSelected] = useState<Influencer | null>(null);
+  const [socials, setSocials] = useState<Social[]>([]);
+  const [account, setAccount] = useState<Account | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
   const supabase = useMemo(() => createClient(), []);
 
   const load = useCallback(async () => {
