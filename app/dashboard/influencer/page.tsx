@@ -11,7 +11,8 @@ const dateLabel = (value: unknown) => value ? new Date(String(value)).toLocaleDa
 
 export default function InfluencerDashboardPage() {
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);\n  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [error, setError] = useState("");
   const [user, setUser] = useState<Row | null>(null);
   const [profile, setProfile] = useState<Row | null>(null);
