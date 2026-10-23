@@ -345,7 +345,7 @@ export default function InfluencerProfilePage() {
       {/* Header */}
       <header className="relative z-20 border-b border-white/10 bg-black/20 backdrop-blur-xl">
         <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-6 lg:px-8">
-          <Link href="/" className="flex items-center gap-3">
+          <Link href="/dashboard/influencer" className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-xl border border-white/10 bg-white/[0.04]">
               <img
                 src="/a-logo.png"
