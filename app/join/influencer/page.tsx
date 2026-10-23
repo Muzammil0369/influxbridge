@@ -25,6 +25,8 @@ export default function InfluencerJoinPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const [confirmationRequired, setConfirmationRequired] = useState(false);
+  const [resendingConfirmation, setResendingConfirmation] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -82,6 +84,16 @@ export default function InfluencerJoinPage() {
       ...current,
       [field]: value,
     }));
+  };
+
+  const handleResendConfirmation = async () => {
+    if (!formData.email.trim() || resendingConfirmation) return;
+    setResendingConfirmation(true);
+    setResendMessage("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.resend({ type: "signup", email: formData.email.trim() });
+    setResendingConfirmation(false);
+    setResendMessage(error ? error.message : "If this address needs confirmation, a fresh verification email is on its way. Check your inbox and spam folder.");
   };
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
@@ -489,13 +501,11 @@ export default function InfluencerJoinPage() {
                   </p>
 
                   <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                    {confirmationRequired ? "Confirm your email to continue." : "Your creator journey starts here."}
+                    {confirmationRequired ? "Check your inbox." : "Your creator journey starts here."}
                   </h2>
 
                   <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/45">
-                    Your account is created securely. Continue
-                    to build your creator profile with your niche, social
-                    channels, audience and portfolio.
+                    {confirmationRequired ? "We sent a verification link to " + formData.email + ". Confirm your email to activate your account, then sign in to finish your creator profile." : "Your account is created securely. Continue to build your creator profile with your niche, social channels, audience and portfolio."}
                   </p>
 
                   <div className="mt-8 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.04] p-5 text-left">
@@ -516,16 +526,20 @@ export default function InfluencerJoinPage() {
                     </div>
                   </div>
 
-                  <Link
-                    href="/join/influencer/profile"
-                    className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110"
-                  >
-                    Continue to Creator Profile
-                    <ArrowRight
-                      size={17}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </Link>
+                  {confirmationRequired ? (
+                    <div className="mt-8 space-y-3">
+                      <button type="button" onClick={handleResendConfirmation} disabled={resendingConfirmation} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110 disabled:opacity-60">
+                        <Mail size={17} /> {resendingConfirmation ? "Sending verification email…" : "Resend verification email"}
+                      </button>
+                      {resendMessage && <p role="status" className="text-xs leading-5 text-cyan-200/80">{resendMessage}</p>}
+                      <p className="text-center text-xs leading-5 text-white/35">Already verified? Sign in to continue your profile.</p>
+                      <Link href="/login" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/75 transition hover:bg-white/[.05]">Continue to login <ArrowRight size={16}/></Link>
+                    </div>
+                  ) : (
+                    <Link href="/join/influencer/profile" className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110">
+                      Continue to Creator Profile <ArrowRight size={17} className="transition-transform group-hover:translate-x-1"/>
+                    </Link>
+                  )}
 
                   <Link
                     href="/login"
