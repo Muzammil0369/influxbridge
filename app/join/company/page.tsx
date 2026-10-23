@@ -64,7 +64,7 @@ export default function CompanyJoinPage() {
 
     if (!data.session) {
       setLoading(false);
-      setNotice("Your account and company workspace have been created. Confirm your email, then sign in. Logo upload needs an authenticated session and can be completed once you are signed in.");
+      setNotice("We sent a verification link to " + email.trim() + ". Confirm your email before signing in. Your company workspace is ready; you can upload its logo after verification.");
       return;
     }
 
@@ -119,7 +119,7 @@ export default function CompanyJoinPage() {
 
         <div className="rounded-3xl border border-white/10 bg-white/[.045] p-6 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-9">
           <div className="mb-7"><h2 className="text-2xl font-semibold">Create company account</h2><p className="mt-2 text-sm text-white/45">Your workspace is created securely with your account.</p></div>
-          {notice ? <div role="status" className="rounded-2xl border border-emerald-400/20 bg-emerald-400/[.07] p-5 text-sm leading-6 text-emerald-100"><p>{notice}</p><Link href="/login" className="mt-4 inline-flex items-center gap-2 font-semibold text-cyan-300 hover:text-cyan-200">Go to login <ArrowRight size={16}/></Link></div> : <form onSubmit={handleSubmit} className="space-y-5">
+          {notice ? <div role="status" className="rounded-2xl border border-cyan-400/20 bg-gradient-to-br from-cyan-400/[.09] to-violet-500/[.07] p-6 text-sm leading-6 text-white/75"><div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-cyan-300/20 bg-cyan-300/10 text-cyan-200"><Mail size={25}/></div><p className="text-xs font-semibold uppercase tracking-[.2em] text-cyan-300">One last step</p><h3 className="mt-2 text-2xl font-semibold tracking-tight text-white">Check your inbox</h3><p className="mt-3">{notice}</p><p className="mt-3 text-xs text-white/40">If you don’t see it, check your spam or junk folder.</p><Link href="/login" className="mt-6 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3 font-semibold text-black transition hover:brightness-110">Continue to login <ArrowRight size={16}/></Link></div> : <form onSubmit={handleSubmit} className="space-y-5">
             <div className="grid gap-5 sm:grid-cols-2">
               <Field label="Your full name" value={fullName} onChange={setFullName} placeholder="Full name" required/>
               <Field label="Company name" value={companyName} onChange={setCompanyName} placeholder="Company name" required/>
