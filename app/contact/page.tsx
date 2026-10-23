@@ -16,12 +16,35 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting) return;
+    setSubmitting(true);
+    setSubmitError("");
+    const form = event.currentTarget;
+    const values = new FormData(form);
+    const supabase = createClient();
+    const { error } = await supabase.rpc("submit_public_lead", {
+      p_company_name: String(values.get("company_name") ?? ""),
+      p_contact_email: String(values.get("contact_email") ?? ""),
+      p_website_url: String(values.get("website_url") ?? ""),
+      p_services: values.getAll("services").map(String).join(", "),
+      p_budget: String(values.get("budget") ?? ""),
+      p_duration: String(values.get("duration") ?? ""),
+      p_project_overview: String(values.get("project_overview") ?? ""),
+    });
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message.includes("submit_public_lead") ? "The enquiry service is not enabled yet. Please try again later or email hello@influxbridge.com." : error.message);
+      return;
+    }
     setSubmitted(true);
   }
 
@@ -91,11 +114,13 @@ export default function ContactPage() {
                   <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid gap-6 sm:grid-cols-2">
                       <FormField
+                        name="company_name"
                         label="Company Name"
                         placeholder="Your company"
                         icon={Building2}
                       />
                       <FormField
+                        name="contact_email"
                         label="Work Email"
                         placeholder="you@company.com"
                         type="email"
@@ -127,6 +152,8 @@ export default function ContactPage() {
                           >
                             <input
                               type="checkbox"
+                              name="services"
+                              value={item}
                               className="h-4 w-4 rounded border-blue-500/50 bg-[#010711] accent-cyan-400"
                             />
                             {item}
@@ -137,11 +164,13 @@ export default function ContactPage() {
 
                     <div className="grid gap-6 sm:grid-cols-2">
                       <FormField
+                        name="budget"
                         label="Estimated Budget"
                         placeholder="$5,000 - $10,000"
                         icon={Target}
                       />
                       <FormField
+                        name="duration"
                         label="Campaign Duration"
                         placeholder="30 days"
                         icon={Clock3}
@@ -153,18 +182,23 @@ export default function ContactPage() {
                         Project Overview & Goals
                       </label>
                       <textarea
+                        name="project_overview"
                         required
+                        minLength={10}
+                        maxLength={5000}
                         rows={6}
                         placeholder="Tell us about your product, target audience, goals, and anything else we should know..."
                         className="w-full resize-none rounded-xl border border-blue-500/30 bg-[#031326]/60 px-4 py-3.5 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-400 focus:bg-[#031326]"
                       />
                     </div>
 
+                    {submitError && <p role="alert" className="rounded-xl border border-red-400/30 bg-red-400/10 px-4 py-3 text-sm text-red-200">{submitError}</p>}
                     <button
                       type="submit"
+                      disabled={submitting}
                       className="group flex w-full items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#08a9f8] to-[#9840f1] px-6 py-4 text-base font-bold shadow-[0_0_30px_rgba(0,140,255,0.4)] transition-all hover:scale-[1.01] hover:brightness-110"
                     >
-                      Submit Campaign Brief
+                      {submitting ? "Submitting your brief…" : "Submit Campaign Brief"}
                       <Send className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                     </button>
                   </form>
@@ -238,11 +272,13 @@ export default function ContactPage() {
 
 function FormField({
   label,
+  name,
   placeholder,
   type = "text",
   icon: Icon,
 }: {
   label: string;
+  name: string;
   placeholder: string;
   type?: string;
   icon?: typeof Building2;
@@ -257,9 +293,11 @@ function FormField({
           <Icon className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400/70" />
         )}
         <input
-          required
+          name={name}
+          required={name !== "website_url"}
           type={type}
           placeholder={placeholder}
+          maxLength={name === "company_name" ? 160 : name === "contact_email" ? 254 : 300}
           className={`h-12 w-full rounded-xl border border-blue-500/30 bg-[#031326]/60 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-400 focus:bg-[#031326] ${
             Icon ? "pl-11 pr-4" : "px-4"
           }`}
