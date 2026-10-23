@@ -325,10 +325,10 @@ export default function LoginPage() {
                       Don&apos;t have an account?
                     </span>{" "}
                     <Link
-                      href={role === "company" ? "/contact" : "/join/influencer"}
+                      href={role === "company" ? "/join/company" : "/join/influencer"}
                       className="text-sm font-semibold text-cyan-400 transition hover:text-cyan-300"
                     >
-                      {role === "company" ? "Start a Campaign" : "Join the Network"}
+                      {role === "company" ? "Create a Company Account" : "Join the Network"}
                     </Link>
                   </div>
                 </>
