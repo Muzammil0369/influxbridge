@@ -18,6 +18,8 @@ type Lead = {
 };
 
 const filters = ["All", "NEW", "QUALIFIED", "PROPOSAL_SENT"];
+type LeadKind = "companies" | "influencers";
+const isInfluencerLead = (lead: Lead) => /inquiry type:\s*influencer/i.test(lead.notes ?? "");
 const title = { eyebrow: "Business Development", heading: "Leads", sub: "Review inbound opportunities, qualify prospects, and track proposal progress." };
 const pretty = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/\b\w/g, (letter) => letter.toUpperCase());
 
@@ -25,6 +27,7 @@ export default function AdminSectionPage() {
   const [rows, setRows] = useState<Lead[]>([]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
+  const [leadKind, setLeadKind] = useState<LeadKind>("companies");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [savingId, setSavingId] = useState<string | null>(null);
@@ -61,9 +64,10 @@ export default function AdminSectionPage() {
   }, []);
 
   const filtered = useMemo(() => rows.filter((row) => {
+    const matchesKind = leadKind === "influencers" ? isInfluencerLead(row) : !isInfluencerLead(row);
     const haystack = [row.company_name, row.contact_name, row.contact_email, row.website_url, row.notes, row.status].filter(Boolean).join(" ").toLowerCase();
-    return haystack.includes(query.toLowerCase()) && (filter === "All" || row.status.toUpperCase() === filter);
-  }), [rows, query, filter]);
+    return matchesKind && haystack.includes(query.toLowerCase()) && (filter === "All" || row.status.toUpperCase() === filter);
+  }), [rows, query, filter, leadKind]);
 
   async function updateStatus(id: string, status: string) {
     setSavingId(id);
@@ -83,13 +87,17 @@ export default function AdminSectionPage() {
           <h2 className="mt-2 text-2xl font-semibold tracking-tight">{title.heading}</h2>
           <p className="mt-2 text-xs text-white/30">{title.sub}</p>
         </div>
-        <div className="text-[10px] text-white/30">{filtered.length} visible records · Live from Supabase</div>
+        <div className="text-[10px] text-white/30">{filtered.length} {leadKind === "companies" ? "company inquiries" : "influencer inquiries"} · Live from Supabase</div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3 lg:flex-row">
+      <div className="mt-6 flex flex-wrap gap-2 rounded-xl border border-white/[0.07] bg-white/[0.02] p-1.5">
+        {([{ value: "companies", label: "Company inquiries", count: rows.filter((row) => !isInfluencerLead(row)).length }, { value: "influencers", label: "Influencer inquiries", count: rows.filter(isInfluencerLead).length }] as const).map((tab) => <button key={tab.value} onClick={() => { setLeadKind(tab.value); setFilter("All"); }} className={`rounded-lg px-4 py-2.5 text-xs transition ${leadKind === tab.value ? "border border-cyan-400/20 bg-cyan-400/[0.08] text-cyan-200" : "text-white/40 hover:bg-white/[0.04] hover:text-white/70"}`}>{tab.label}<span className="ml-2 text-[10px] opacity-60">{tab.count}</span></button>)}
+      </div>
+
+      <div className="mt-4 flex flex-col gap-3 lg:flex-row">
         <div className="relative flex-1">
           <Search className="absolute left-3.5 top-3 text-white/20" size={16} />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search companies, contacts, notes..." className="w-full rounded-xl border border-white/[0.08] bg-white/[0.025] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-white/20 focus:border-cyan-400/25 focus:bg-white/[0.04]" />
+          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder={leadKind === "companies" ? "Search companies, contacts, notes..." : "Search creators, emails, niches, profiles..."} className="w-full rounded-xl border border-white/[0.08] bg-white/[0.025] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-white/20 focus:border-cyan-400/25 focus:bg-white/[0.04]" />
         </div>
         <div className="flex gap-2 overflow-x-auto">
           {filters.map((value) => (
@@ -104,18 +112,17 @@ export default function AdminSectionPage() {
 
       <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02]">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[980px] text-left">
+          <table className="w-full min-w-[820px] text-left">
             <thead className="border-b border-white/[0.07] bg-white/[0.015] text-[9px] uppercase tracking-[0.16em] text-white/20">
-              <tr>{["Company / Contact", "Project notes", "Budget", "Status", "Received", "Action"].map((heading) => <th key={heading} className="px-5 py-3.5 font-medium">{heading}</th>)}</tr>
+              <tr>{(leadKind === "companies" ? ["Company / Contact", "Project notes", "Budget", "Status", "Received", "Action"] : ["Influencer / Contact", "Niche & profile", "Message", "Status", "Received", "Action"]).map((heading) => <th key={heading} className="px-5 py-3.5 font-medium">{heading}</th>)}</tr>
             </thead>
             <tbody className="divide-y divide-white/[0.055]">
-              {!loading && filtered.length === 0 && <tr><td colSpan={6} className="px-5 py-12 text-center text-xs text-white/35">{error ? "Records could not be loaded." : query || filter !== "All" ? "No leads match this search or filter." : "No leads yet. New contact-form submissions will appear here."}</td></tr>}
+              {!loading && filtered.length === 0 && <tr><td colSpan={6} className="px-5 py-12 text-center text-xs text-white/35">{error ? "Records could not be loaded." : query || filter !== "All" ? "No inquiries match this search or filter." : leadKind === "companies" ? "No company inquiries yet. Company contact-form submissions will appear here." : "No influencer inquiries yet. Creator contact-form submissions will appear here."}</td></tr>}
               {loading && <tr><td colSpan={6} className="px-5 py-12 text-center text-xs text-white/35">Loading leads from Supabase…</td></tr>}
               {filtered.map((lead) => (
                 <tr key={lead.id} className="group transition hover:bg-white/[0.025]">
                   <td className="px-5 py-4"><p className="text-xs font-medium text-white/75">{lead.company_name}</p><p className="mt-1 text-[10px] text-white/35">{lead.contact_name || "Contact not provided"}{lead.contact_email ? ` · ${lead.contact_email}` : ""}</p></td>
-                  <td className="max-w-[280px] px-5 py-4 text-xs text-white/45">{lead.notes || lead.website_url || "—"}</td>
-                  <td className="px-5 py-4 text-xs text-white/45">{lead.budget == null ? "Not specified" : `${lead.currency} ${Number(lead.budget).toLocaleString()}`}</td>
+                  {leadKind === "companies" ? <><td className="max-w-[280px] px-5 py-4 text-xs text-white/45">{lead.notes || lead.website_url || "—"}</td><td className="px-5 py-4 text-xs text-white/45">{lead.budget == null ? "Not specified" : `${lead.currency} ${Number(lead.budget).toLocaleString()}`}</td></> : <><td className="max-w-[220px] px-5 py-4 text-xs text-white/45">{lead.notes?.match(/Niche:\s*([^\n]+)/i)?.[1] || "—"}{lead.website_url && <p className="mt-1 truncate text-cyan-300/70"><a href={lead.website_url} target="_blank" rel="noreferrer" className="hover:text-cyan-200">{lead.website_url}</a></p>}</td><td className="max-w-[300px] px-5 py-4 text-xs text-white/45">{lead.notes?.match(/Message:\s*([\s\S]*)/i)?.[1] || "—"}</td></>}
                   <td className="px-5 py-4"><span className="rounded-full border border-cyan-400/15 bg-cyan-400/[0.05] px-2.5 py-1 text-[9px] text-cyan-300/80">{pretty(lead.status)}</span></td>
                   <td className="px-5 py-4 text-xs text-white/40">{new Date(lead.created_at).toLocaleDateString()}</td>
                   <td className="px-5 py-4"><select aria-label={`Update status for ${lead.company_name}`} disabled={savingId === lead.id} value={lead.status} onChange={(event) => void updateStatus(lead.id, event.target.value)} className="max-w-[160px] rounded-lg border border-white/10 bg-[#071426] px-2 py-2 text-[10px] text-white/70 outline-none focus:border-cyan-400/40"><option value={lead.status}>{savingId === lead.id ? "Saving…" : pretty(lead.status)}</option>{["NEW", "QUALIFIED", "PROPOSAL_SENT", "WON", "LOST"].filter((status) => status !== lead.status).map((status) => <option key={status} value={status}>{pretty(status)}</option>)}</select><MoreHorizontal className="ml-2 inline text-white/20" size={14}/></td>
