@@ -75,7 +75,9 @@ export default function InfluencerDashboardPage() {
 
   const fullName = creator?.display_name || profile?.full_name || user?.email?.split("@")[0] || "Creator";
   const avatar = profile?.avatar_url as string | undefined;
-  const verificationStatus = String(creator?.verification_status || "").toUpperCase();\n  const storedStatus = String(creator?.profile_status || "INCOMPLETE").toUpperCase();\n  const status = verificationStatus === "APPROVED" ? "ACTIVE" : storedStatus;
+  const verificationStatus = String(creator?.verification_status || "").toUpperCase();
+  const storedStatus = String(creator?.profile_status || "INCOMPLETE").toUpperCase();
+  const status = verificationStatus === "APPROVED" ? "ACTIVE" : storedStatus;
   const activeCampaigns = campaigns.filter((row) => {
     const c = row.campaigns || row.campaign || row;
     return !["COMPLETED", "CANCELLED", "REJECTED", "ARCHIVED"].includes(String(c.status || row.status || "").toUpperCase());
