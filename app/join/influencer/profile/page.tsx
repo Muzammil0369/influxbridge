@@ -365,7 +365,7 @@ export default function InfluencerProfilePage() {
           </Link>
 
           <Link
-            href="/"
+            href="/dashboard/influencer"
             className="group flex items-center gap-2 text-sm text-white/55 transition hover:text-white"
           >
             <ArrowLeft
@@ -1190,7 +1190,7 @@ export default function InfluencerProfilePage() {
                   </Link>
 
                   <Link
-                    href="/"
+                    href="/dashboard/influencer"
                     className="inline-flex flex-1 items-center justify-center rounded-xl border border-white/10 bg-black/20 px-5 py-3 text-sm font-semibold text-white/60 transition hover:bg-white/[0.05] hover:text-white"
                   >
                     Back to Home
