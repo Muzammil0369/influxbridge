@@ -196,7 +196,7 @@ export default function AdminCampaignsPage() {
   const visibleCreators = creators.filter((creator) => {
     const searchText = `${creator.display_name} ${creator.niche ?? ""} ${creator.location ?? ""} ${profiles[creator.id]?.full_name ?? ""}`.toLowerCase();
     return searchText.includes(creatorQuery.toLowerCase());
-  }).filter(creator => creator.verification_status === "APPROVED" && creator.profile_status === "ACTIVE").sort((a,b) => matchScore(selectedCampaign ?? rows[0],b).total - matchScore(selectedCampaign ?? rows[0],a).total);
+  }).filter(creator => creator.verification_status === "APPROVED" && creator.profile_status === "ACTIVE").sort((a,b) => selectedCampaign ? matchScore(selectedCampaign,b).total - matchScore(selectedCampaign,a).total : 0);
 
   return <>
     <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
