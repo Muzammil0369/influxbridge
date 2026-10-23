@@ -126,7 +126,7 @@ export default function CompanyCampaignsPage() {
             </p>
 
             <p className="mt-2 text-sm font-semibold">
-              NovaPay
+              {companyName}
             </p>
 
             <p className="mt-1 text-xs text-white/30">
@@ -158,7 +158,6 @@ export default function CompanyCampaignsPage() {
               href="/dashboard/company/messages"
               icon={<MessageSquare size={18} />}
               label="Messages"
-              badge="2"
             />
           </nav>
 
@@ -211,7 +210,7 @@ export default function CompanyCampaignsPage() {
               </button>
 
               <div className="hidden h-10 items-center rounded-xl border border-white/10 bg-white/5 px-3 text-xs text-white/50 sm:flex">
-                NP
+                {companyName.slice(0, 2).toUpperCase()}
               </div>
             </div>
           </div>
