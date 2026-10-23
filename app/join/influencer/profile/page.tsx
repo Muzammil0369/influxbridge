@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -62,6 +63,9 @@ const steps = [
 export default function InfluencerProfilePage() {
   const [currentStep, setCurrentStep] = useState(1);
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImageFile, setProfileImageFile] = useState<File | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [attempted, setAttempted] = useState(false);
 
@@ -105,7 +109,10 @@ export default function InfluencerProfilePage() {
       return;
     }
 
+    if (!["image/png", "image/jpeg", "image/webp", "image/avif"].includes(file.type)) return;
+    if (profileImage) URL.revokeObjectURL(profileImage);
     const imageUrl = URL.createObjectURL(file);
+    setProfileImageFile(file);
     setProfileImage(imageUrl);
   };
 
@@ -115,6 +122,7 @@ export default function InfluencerProfilePage() {
     }
 
     setProfileImage(null);
+    setProfileImageFile(null);
   };
 
   const toggleLanguage = (language: string) => {
@@ -183,14 +191,82 @@ export default function InfluencerProfilePage() {
     }
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAttempted(true);
+    if (!step1Valid || !hasSocial || !step3Valid || !step4Valid || saving) return;
 
-    if (!step1Valid || !hasSocial || !step3Valid || !step4Valid) {
+    setSaving(true);
+    setSaveError("");
+    const supabase = createClient();
+    const { data: authData, error: authError } = await supabase.auth.getUser();
+    const user = authData.user;
+    if (authError || !user) {
+      setSaving(false);
+      setSaveError("Please log in with the account you created, then return to complete your creator profile.");
       return;
     }
 
+    if (profileImageFile) {
+      const extension = profileImageFile.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${user.id}/avatar-${Date.now()}.${extension}`;
+      const { error: uploadError } = await supabase.storage.from("influencer-avatars").upload(path, profileImageFile, { upsert: true, contentType: profileImageFile.type });
+      if (uploadError) {
+        setSaving(false);
+        setSaveError(`Profile photo upload failed: ${uploadError.message}`);
+        return;
+      }
+      const publicAvatarUrl = supabase.storage.from("influencer-avatars").getPublicUrl(path).data.publicUrl;
+      const { error: avatarError } = await supabase.from("profiles").update({ avatar_url: publicAvatarUrl, updated_at: new Date().toISOString() }).eq("id", user.id);
+      if (avatarError) {
+        setSaving(false);
+        setSaveError(`Photo uploaded, but saving your account image failed: ${avatarError.message}`);
+        return;
+      }
+    }
+
+    const { error: profileError } = await supabase.from("influencer_profiles").upsert({
+      id: user.id,
+      display_name: formData.creatorName.trim(),
+      bio: formData.bio.trim(),
+      location: `${formData.city.trim()}, ${formData.country}`,
+      niche: formData.niche,
+      languages: formData.languages,
+      profile_status: "SUBMITTED",
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "id" });
+    if (profileError) {
+      setSaving(false);
+      setSaveError(`Could not save your creator profile: ${profileError.message}`);
+      return;
+    }
+
+    const socials = [
+      { platform: "X", value: formData.twitter },
+      { platform: "YOUTUBE", value: formData.youtube },
+      { platform: "INSTAGRAM", value: formData.instagram },
+      { platform: "TIKTOK", value: formData.tiktok },
+    ].filter((item) => item.value.trim());
+    for (const social of socials) {
+      const raw = social.value.trim();
+      const url = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
+      let username = raw.replace(/^https?:\/\//i, "").replace(/^www\./i, "").split(/[/?#]/)[0];
+      username = username.split("@").pop() || username;
+      const { error: socialError } = await supabase.from("social_accounts").upsert({
+        influencer_id: user.id,
+        platform: social.platform,
+        username,
+        profile_url: url,
+        followers_count: 0,
+      }, { onConflict: "influencer_id,platform" });
+      if (socialError) {
+        setSaving(false);
+        setSaveError(`Profile saved, but a social link could not be saved: ${socialError.message}`);
+        return;
+      }
+    }
+
+    setSaving(false);
     setSubmitted(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -374,6 +450,7 @@ export default function InfluencerProfilePage() {
               <div>
                 <div className="rounded-3xl border border-white/10 bg-white/[0.045] p-6 shadow-2xl shadow-black/30 backdrop-blur-2xl sm:p-8">
                   <form onSubmit={handleSubmit}>
+                    {saveError && <p role="alert" className="mb-5 rounded-xl border border-red-400/20 bg-red-400/10 px-4 py-3 text-sm text-red-300">{saveError}</p>}
                     {/* STEP 1 */}
                     {currentStep === 1 && (
                       <div className="space-y-7">
