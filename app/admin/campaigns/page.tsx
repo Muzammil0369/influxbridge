@@ -1,76 +1,83 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { getCampaigns } from "@/lib/platform";
-import { Filter, MoreHorizontal, Search } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
+import { Filter, Search } from "lucide-react";
 
-type Row = Record<string, string>;
+type Campaign = {
+  id: string;
+  name: string;
+  status: "ACTIVE" | "IN_REVIEW" | "COMPLETED";
+  phase: string;
+  budget: number | null;
+  currency: string;
+  deadline: string | null;
+  company: { name: string } | null;
+};
 
-const filters = ["All","Active","In Review","Completed"];
-const title = { eyebrow: "Campaign Operations", heading: "Campaigns", sub: "Monitor active work, creator assignments, delivery progress, and completion." };
+const title = { eyebrow: "Campaign Operations", heading: "Campaigns", sub: "Monitor live campaign records, client accounts, budgets, and delivery stages." };
+const filters = ["All", "ACTIVE", "IN_REVIEW", "COMPLETED"];
 
-export default function AdminSectionPage() {
-  const [rows, setRows] = useState<Row[]>([]);
-  useEffect(() => {
-    const load = () => setRows(    getCampaigns().map(x=>({campaign:x.name,company:x.client,status:x.status,progress:`${x.progress}%`,creators:String(x.creators)})));
-    load();
-    const h = () => load();
-    window.addEventListener("influxbridge:store", h);
-    return () => window.removeEventListener("influxbridge:store", h);
-  }, []);
+export default function AdminCampaignsPage() {
+  const [rows, setRows] = useState<Campaign[]>([]);
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState("All");
-  const filtered = useMemo(() => rows.filter((row) =>
-    Object.values(row).join(" ").toLowerCase().includes(query.toLowerCase()) &&
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [busyId, setBusyId] = useState("");
+  const supabase = useMemo(() => createClient(), []);
+
+  const load = useCallback(async () => {
+    const { data, error: requestError } = await supabase
+      .from("campaigns")
+      .select("id, name, status, phase, budget, currency, deadline, company:companies(name)")
+      .order("created_at", { ascending: false });
+    if (requestError) { setError(requestError.message); setLoading(false); return; }
+    setRows((data ?? []) as unknown as Campaign[]);
+    setError("");
+    setLoading(false);
+  }, [supabase]);
+
+  useEffect(() => {
+    void load();
+    const channel = supabase.channel("admin-campaigns-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, () => void load())
+      .subscribe();
+    return () => { void supabase.removeChannel(channel); };
+  }, [load, supabase]);
+
+  const filtered = rows.filter((row) =>
+    `${row.name} ${row.company?.name ?? ""} ${row.phase} ${row.status}`.toLowerCase().includes(query.toLowerCase()) &&
     (filter === "All" || row.status === filter)
-  ), [rows, query, filter]);
-
-  return (
-    <>
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
-        <div>
-          <p className="text-[9px] uppercase tracking-[0.2em] text-white/20">{title.eyebrow}</p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight">{title.heading}</h2>
-          <p className="mt-2 text-xs text-white/30">{title.sub}</p>
-        </div>
-        <div className="text-[10px] text-white/20">{filtered.length} visible records</div>
-      </div>
-
-      <div className="mt-6 flex flex-col gap-3 lg:flex-row">
-        <div className="relative flex-1">
-          <Search className="absolute left-3.5 top-3 text-white/20" size={16} />
-          <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search records..." className="w-full rounded-xl border border-white/[0.08] bg-white/[0.025] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-white/20 focus:border-cyan-400/25 focus:bg-white/[0.04]" />
-        </div>
-        <div className="flex gap-2 overflow-x-auto">
-          {filters.map((x) => (
-            <button key={x} onClick={() => setFilter(x)} className={`whitespace-nowrap rounded-xl border px-3.5 py-2.5 text-[10px] transition ${filter === x ? "border-cyan-400/20 bg-cyan-400/[0.07] text-cyan-300" : "border-white/[0.07] bg-white/[0.02] text-white/30 hover:text-white/60"}`}>
-              <Filter size={12} className="mr-1.5 inline" />{x}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02]">
-        <div className="overflow-x-auto">
-          <table className="w-full min-w-[820px] text-left">
-            <thead className="border-b border-white/[0.07] bg-white/[0.015] text-[9px] uppercase tracking-[0.16em] text-white/20">
-              <tr>{Object.keys(rows[0] ?? {}).map((key) => <th key={key} className="px-5 py-3.5 font-medium">{key}</th>)}<th className="px-5 py-3.5 font-medium">Action</th></tr>
-            </thead>
-            <tbody className="divide-y divide-white/[0.055]">
-              {filtered.map((row, i) => (
-                <tr key={i} className="group transition hover:bg-white/[0.025]">
-                  {Object.entries(row).map(([key, value]) => (
-                    <td key={key} className="px-5 py-4 text-xs text-white/45">
-                      {key === "status" ? <span className="rounded-full border border-cyan-400/15 bg-cyan-400/[0.05] px-2.5 py-1 text-[9px] text-cyan-300/80">{value}</span> : value}
-                    </td>
-                  ))}
-                  <td className="px-5 py-4"><button className="rounded-lg p-2 text-white/20 transition hover:bg-white/[0.05] hover:text-white" aria-label="More actions"><MoreHorizontal size={16}/></button></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </>
   );
+
+  async function updateStatus(id: string, status: Campaign["status"]) {
+    setBusyId(id);
+    const { error: updateError } = await supabase.from("campaigns")
+      .update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+    if (updateError) setError(updateError.message);
+    else { setError(""); await load(); }
+    setBusyId("");
+  }
+
+  return <>
+    <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
+      <div><p className="text-[9px] uppercase tracking-[0.2em] text-white/30">{title.eyebrow}</p><h2 className="mt-2 text-2xl font-semibold tracking-tight">{title.heading}</h2><p className="mt-2 text-xs text-white/40">{title.sub}</p></div>
+      <div className="text-[10px] text-white/30">{filtered.length} live records</div>
+    </div>
+    <div className="mt-6 flex flex-col gap-3 lg:flex-row">
+      <div className="relative flex-1"><Search className="absolute left-3.5 top-3 text-white/30" size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search campaigns or companies..." className="w-full rounded-xl border border-white/[0.08] bg-white/[0.025] py-2.5 pl-10 pr-4 text-xs text-white outline-none placeholder:text-white/25 focus:border-cyan-400/25"/></div>
+      <div className="flex gap-2 overflow-x-auto">{filters.map(x=><button key={x} onClick={()=>setFilter(x)} className={`whitespace-nowrap rounded-xl border px-3.5 py-2.5 text-[10px] ${filter===x?"border-cyan-400/20 bg-cyan-400/[0.07] text-cyan-300":"border-white/[0.07] bg-white/[0.02] text-white/40"}`}><Filter size={12} className="mr-1.5 inline"/>{x==="IN_REVIEW"?"In review":x==="ACTIVE"?"Active":x==="COMPLETED"?"Completed":x}</button>)}</div>
+    </div>
+    {error && <p role="alert" className="mt-4 rounded-xl border border-red-400/20 bg-red-400/[0.06] p-3 text-xs text-red-200">Supabase: {error}</p>}
+    <div className="mt-5 overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.02]"><div className="overflow-x-auto"><table className="w-full min-w-[850px] text-left">
+      <thead className="border-b border-white/[0.07] bg-white/[0.015] text-[9px] uppercase tracking-[0.16em] text-white/30"><tr>{["Campaign","Company","Budget","Phase","Deadline","Status"].map(x=><th key={x} className="px-5 py-3.5 font-medium">{x}</th>)}</tr></thead>
+      <tbody className="divide-y divide-white/[0.055]">
+        {loading ? <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-white/40">Loading campaigns from Supabase…</td></tr> : filtered.length===0 ? <tr><td colSpan={6} className="px-5 py-8 text-center text-xs text-white/40">No campaigns found.</td></tr> : filtered.map(row=><tr key={row.id} className="transition hover:bg-white/[0.025]">
+          <td className="px-5 py-4 text-xs text-white/80">{row.name}</td><td className="px-5 py-4 text-xs text-white/50">{row.company?.name ?? "—"}</td><td className="px-5 py-4 text-xs text-white/50">{row.budget==null?"—":new Intl.NumberFormat("en-US",{style:"currency",currency:row.currency||"USD",maximumFractionDigits:0}).format(row.budget)}</td><td className="px-5 py-4 text-xs text-white/50">{row.phase.replaceAll("_"," ")}</td><td className="px-5 py-4 text-xs text-white/50">{row.deadline||"—"}</td>
+          <td className="px-5 py-4"><select aria-label={`Status for ${row.name}`} disabled={busyId===row.id} value={row.status} onChange={e=>void updateStatus(row.id,e.target.value as Campaign["status"])} className="rounded-lg border border-white/10 bg-[#10151d] px-2.5 py-2 text-[10px] text-cyan-200 outline-none"><option value="ACTIVE">Active</option><option value="IN_REVIEW">In review</option><option value="COMPLETED">Completed</option></select></td>
+        </tr>)}
+      </tbody>
+    </table></div></div>
+  </>;
 }
