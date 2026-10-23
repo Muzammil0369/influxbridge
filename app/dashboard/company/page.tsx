@@ -22,8 +22,8 @@ import {
   Users,
   X,
 } from "lucide-react";
-import { useState } from "react";
-import { getCampaigns } from "@/lib/platform";
+import { useEffect, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 type CampaignStatus = "Active" | "In Review" | "Completed";
 
@@ -40,7 +40,7 @@ type Campaign = {
   description: string;
 };
 
-const campaigns: Campaign[] = getCampaigns().map((x) => ({ id:x.id, title:x.name, category:x.category, status:x.status, creators:x.creators, budget:`$${x.budget.toLocaleString()}`, reach:x.reach, deadline:new Date(x.deadline).toLocaleDateString("en-US",{month:"short",day:"2-digit",year:"numeric"}), progress:x.progress, description:x.description }));
+
 
 const statusStyles: Record<CampaignStatus, string> = {
   Active: "border-cyan-400/20 bg-cyan-400/10 text-cyan-300",
@@ -53,8 +53,36 @@ export default function CompanyCampaignsPage() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [filter, setFilter] = useState<"All" | CampaignStatus>("All");
   const [search, setSearch] = useState("");
+  const [campaigns, setCampaigns] = useState<Campaign[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [companyName, setCompanyName] = useState("Company Portal");
 
-  const filteredCampaigns = campaigns.filter((campaign) => {
+  useEffect(() => {
+    const supabase = createClient();
+    let alive = true;
+    const load = async () => {
+      const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) { if (alive) { setLoadError("Sign in with your company account to view campaigns."); setLoading(false); } return; }
+      const { data: member, error: memberError } = await supabase.from("company_members").select("company_id, companies(name)").eq("user_id", auth.user.id).limit(1).maybeSingle();
+      if (memberError) { if (alive) { setLoadError(memberError.message); setLoading(false); } return; }
+      if (!member?.company_id) { if (alive) setLoading(false); return; }
+      const company = member.companies as unknown as { name?: string } | null;
+      if (alive && company?.name) setCompanyName(company.name);
+      const { data, error } = await supabase.from("campaigns").select("id,name,description,budget,currency,status,phase,deadline,campaign_creators(id)").eq("company_id", member.company_id).order("created_at", { ascending: false });
+      if (error) { if (alive) { setLoadError(error.message); setLoading(false); } return; }
+      if (alive) {
+        const progress: Record<string, number> = { BRIEF: 10, CREATOR_ASSIGNMENT: 25, DELIVERABLES: 45, REVIEW: 60, PUBLICATION: 75, PERFORMANCE: 85, PAYMENT: 95, COMPLETED: 100 };
+        setCampaigns((data ?? []).map((x: any) => ({ id: x.id, title: x.name, category: "Campaign", status: x.status === "COMPLETED" ? "Completed" : x.status === "IN_REVIEW" ? "In Review" : "Active", creators: Array.isArray(x.campaign_creators) ? x.campaign_creators.length : 0, budget: `${Number(x.budget ?? 0).toLocaleString()}`, reach: "Not tracked", deadline: x.deadline ? new Date(x.deadline + "T00:00:00").toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" }) : "No deadline", progress: progress[x.phase] ?? 0, description: x.description || "No campaign brief has been added yet." })));
+        setLoading(false);
+      }
+    };
+    void load();
+    const channel = supabase.channel("company-campaign-list").on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, () => { void load(); }).on("postgres_changes", { event: "*", schema: "public", table: "campaign_creators" }, () => { void load(); }).subscribe();
+    return () => { alive = false; void supabase.removeChannel(channel); };
+  }, []);
+
+  const filteredCampaigns = useMemo(() => campaigns.filter((campaign) => {
     const matchesFilter =
       filter === "All" || campaign.status === filter;
 
@@ -65,7 +93,7 @@ export default function CompanyCampaignsPage() {
       campaign.category.toLowerCase().includes(query);
 
     return matchesFilter && matchesSearch;
-  });
+  }), [campaigns, filter, search]);
 
   return (
     <div className="min-h-screen bg-[#05070d] text-white">
@@ -220,28 +248,28 @@ export default function CompanyCampaignsPage() {
             <StatCard
               icon={<BriefcaseBusiness size={18} />}
               label="Total campaigns"
-              value="8"
+              value={loading ? "…" : String(campaigns.length)}
               detail="Across your account"
             />
 
             <StatCard
               icon={<TrendingUp size={18} />}
               label="Active campaigns"
-              value="2"
+              value={loading ? "…" : String(campaigns.filter((x) => x.status === "Active").length)}
               detail="Currently running"
             />
 
             <StatCard
               icon={<Users size={18} />}
               label="Creators engaged"
-              value="31"
+              value={loading ? "…" : String(campaigns.reduce((sum, x) => sum + x.creators, 0))}
               detail="Across all campaigns"
             />
 
             <StatCard
               icon={<DollarSign size={18} />}
               label="Campaign budget"
-              value="$42.8K"
+              value={loading ? "…" : `${campaigns.reduce((sum, x) => sum + Number(x.budget.replace(/[^0-9.]/g, "")), 0).toLocaleString()}`}
               detail="Prototype figure"
             />
           </div>
@@ -289,8 +317,9 @@ export default function CompanyCampaignsPage() {
             </div>
           </div>
 
+          {loadError && <p role="alert" className="mt-5 rounded-xl border border-rose-400/20 bg-rose-400/5 p-4 text-sm text-rose-200">Could not load company campaigns: {loadError}</p>}
           <div className="mt-6 space-y-4">
-            {filteredCampaigns.map((campaign) => (
+            {loading ? <p className="rounded-2xl border border-white/10 p-6 text-sm text-white/45">Loading live campaigns…</p> : filteredCampaigns.length === 0 ? <div className="rounded-2xl border border-dashed border-white/10 p-8 text-center"><p className="font-semibold">{loadError ? "Campaigns unavailable" : "No campaigns linked to this account yet"}</p><p className="mt-2 text-sm text-white/40">Campaigns appear here when an administrator links your account to a company and creates a campaign.</p></div> : filteredCampaigns.map((campaign) => (
               <Link
                 key={campaign.id}
                 href={`/dashboard/company/campaigns/${campaign.id}`}
@@ -381,12 +410,11 @@ export default function CompanyCampaignsPage() {
 
             <div>
               <p className="text-sm font-medium">
-                Prototype campaign workspace
+                Live campaign workspace
               </p>
 
               <p className="mt-1 text-xs leading-5 text-white/35">
-                Campaign budgets, reach, statuses, and performance values
-                are mock data for the current website prototype.
+                Campaigns, budgets, creator assignments and workflow phases are loaded from Supabase. Reach analytics will appear when real campaign metrics are connected.
               </p>
             </div>
           </div>
