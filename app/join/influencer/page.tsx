@@ -493,7 +493,7 @@ export default function InfluencerJoinPage() {
                   </h2>
 
                   <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/45">
-                    Your account setup is complete in this prototype. Continue
+                    Your account is created securely. Continue
                     to build your creator profile with your niche, social
                     channels, audience and portfolio.
                   </p>
