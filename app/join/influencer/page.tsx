@@ -536,8 +536,8 @@ export default function InfluencerJoinPage() {
                       <Link href="/login" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/75 transition hover:bg-white/[.05]">Continue to login <ArrowRight size={16}/></Link>
                     </div>
                   ) : (
-                    <Link href="/join/influencer/profile" className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110">
-                      Continue to Creator Profile <ArrowRight size={17} className="transition-transform group-hover:translate-x-1"/>
+                    <Link href="/login" className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110">
+                      Go to Sign In <ArrowRight size={17} className="transition-transform group-hover:translate-x-1"/>
                     </Link>
                   )}
 
