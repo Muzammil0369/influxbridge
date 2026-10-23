@@ -90,7 +90,37 @@ export default function InfluencerDashboardPage() {
   const profileChecks = [Boolean(creator?.display_name && creator?.bio), socials.length > 0, Boolean(creator?.followers_count), Boolean(creator?.portfolio_url || creator?.sample_video_url)];
   const completion = Math.round(profileChecks.filter(Boolean).length / profileChecks.length * 100);
 
-  async function respondToInvite(assignment: Row, decision: "ACCEPTED" | "DECLINED") { const id = String(assignment.id || ""); if (!id) return; setRespondingId(id); setResponseNotice(""); setError(""); const { error: updateError } = await supabase.from("campaign_creators").update({ status: decision }).eq("id", id).eq("influencer_id", user?.id || ""); if (updateError) setError("Could not update invitation: " + updateError.message); else { setCampaigns(current => current.map(row => String(row.id) === id ? { ...row, status: decision } : row)); setResponseNotice(decision === "ACCEPTED" ? "Campaign invitation accepted." : "Campaign invitation declined."); await load(true); } setRespondingId(""); }
+  async function respondToInvite(assignment: Row, decision: "ACCEPTED" | "DECLINED") {
+    const id = String(assignment.id || "");
+    const uid = user?.id;
+    if (!id || !uid || respondingId) return;
+
+    setRespondingId(id);
+    setResponseNotice("");
+    setError("");
+
+    const { data: updated, error: updateError } = await supabase
+      .from("campaign_creators")
+      .update({ status: decision })
+      .eq("id", id)
+      .eq("influencer_id", uid)
+      .eq("status", "INVITED")
+      .select("id, status")
+      .maybeSingle();
+
+    if (updateError) {
+      setError("Could not update invitation: " + updateError.message);
+    } else if (!updated) {
+      setError("Your invitation was not changed in the database. This usually means the campaign assignment update policy is blocking creators, or the invitation is no longer pending. Please refresh and try again; if it repeats, the Supabase campaign_creators UPDATE policy needs to allow the assigned creator to respond.");
+      await load(true);
+    } else {
+      setCampaigns(current => current.map(row => String(row.id) === id ? { ...row, status: decision } : row));
+      setResponseNotice(decision === "ACCEPTED" ? "Campaign invitation accepted." : "Campaign invitation declined.");
+      await load(true);
+    }
+
+    setRespondingId("");
+  }
 
   async function signOut() { await supabase.auth.signOut(); window.location.href = "/login"; }
 
