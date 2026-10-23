@@ -8,6 +8,7 @@ set search_path = public, pg_temp
 as $$
 declare
   requested_role text;
+  new_company_id uuid;
 begin
   requested_role := upper(coalesce(new.raw_user_meta_data ->> 'role', 'INFLUENCER'));
 
@@ -22,6 +23,20 @@ begin
     nullif(trim(coalesce(new.raw_user_meta_data ->> 'full_name', '')), '')
   )
   on conflict (id) do nothing;
+
+  if requested_role = 'COMPANY' then
+    insert into public.companies (name, website_url, description)
+    values (
+      coalesce(nullif(trim(new.raw_user_meta_data ->> 'company_name'), ''), 'New company'),
+      nullif(trim(coalesce(new.raw_user_meta_data ->> 'website_url', '')), ''),
+      nullif(trim(coalesce(new.raw_user_meta_data ->> 'description', '')), '')
+    )
+    returning id into new_company_id;
+
+    insert into public.company_members (company_id, user_id, role)
+    values (new_company_id, new.id, 'OWNER')
+    on conflict (company_id, user_id) do nothing;
+  end if;
 
   return new;
 end;
