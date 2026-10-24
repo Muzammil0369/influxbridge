@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useMemo,useState} from "react";
 import {createClient} from "@/lib/supabase/client";
-import {Search,Users,MapPin,Instagram,ExternalLink} from "lucide-react";
+import { Search, Users, MapPin, ExternalLink } from "lucide-react";
 type Creator={id:string;name:string;bio:string|null;niche:string|null;location:string|null;verification:string;platforms:string[];followers:number};
 export default function CompanyInfluencersPage(){
  const [items,setItems]=useState<Creator[]>([]),[search,setSearch]=useState(""),[loading,setLoading]=useState(true),[error,setError]=useState("");
