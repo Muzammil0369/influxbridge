@@ -113,24 +113,55 @@ export default function AdminCampaignsPage() {
   }
 
   async function loadAssignments(campaignId: string) {
-    const { data, error: assignmentError } = await supabase.from("campaign_creators")
+    const { data, error: assignmentError } = await supabase
+      .from("campaign_creators")
       .select("id, influencer_id, status, assigned_at")
       .eq("campaign_id", campaignId)
       .order("assigned_at", { ascending: false });
-    if (assignmentError) { setError(assignmentError.message); return; }
+
+    if (assignmentError) {
+      setError(`Could not load campaign assignments: ${assignmentError.message}`);
+      return;
+    }
+
     const next = (data ?? []) as Assignment[];
     setAssignments(next);
-    const ids = [...new Set(next.map((item) => item.influencer_id))];
-    if (ids.length) {
-      const { data: creatorData, error: creatorError } = await supabase.from("influencer_profiles")
+
+    const ids = [...new Set([
+      ...next.map((item) => item.influencer_id),
+      ...creators.map((item) => item.id),
+    ])];
+
+    if (!ids.length) {
+      setProfiles({});
+      return;
+    }
+
+    const [creatorResult, profileResult] = await Promise.all([
+      supabase.from("influencer_profiles")
         .select("id, display_name, location, niche, verification_status, profile_status, followers_count, rate_usdt, primary_audience_country, languages, portfolio_url, sample_video_url")
-        .in("id", ids);
-      if (creatorError) setError(creatorError.message);
-      else setCreators((current) => {
-        const byId = new Map(current.map((item) => [item.id, item]));
-        for (const item of (creatorData ?? []) as Creator[]) byId.set(item.id, item);
-        return [...byId.values()];
-      });
+        .in("id", ids),
+      supabase.from("profiles")
+        .select("id, full_name, avatar_url")
+        .in("id", ids),
+    ]);
+
+    if (creatorResult.error) {
+      setError(`Could not load assigned creator details: ${creatorResult.error.message}`);
+    } else {
+      const byId = new Map(creators.map((item) => [item.id, item]));
+      for (const item of (creatorResult.data ?? []) as Creator[]) byId.set(item.id, item);
+      setCreators([...byId.values()]);
+    }
+
+    if (profileResult.error) {
+      setError((current) => current
+        ? `${current} · Could not load creator photos: ${profileResult.error.message}`
+        : `Could not load creator photos: ${profileResult.error.message}`);
+    } else {
+      const map: Record<string, Profile> = {};
+      for (const profile of (profileResult.data ?? []) as Profile[]) map[profile.id] = profile;
+      setProfiles((current) => ({ ...current, ...map }));
     }
   }
 
@@ -167,30 +198,138 @@ export default function AdminCampaignsPage() {
     setCreatorLoading(false);
   }
 
-  async function saveBrief() { if (!selectedCampaign) return; setBriefSaving(true); setError(""); setNotice(""); const payload = { target_niche: brief.target_niche.trim() || null, target_country: brief.target_country.trim() || null, target_city: brief.target_city.trim() || null, target_audience: brief.target_audience.trim() || null, platforms: splitList(brief.platforms), content_formats: splitList(brief.content_formats), start_date: brief.start_date || null, end_date: brief.end_date || null, is_in_person_event: brief.is_in_person_event, budget: brief.budget.trim() === "" ? null : Number(brief.budget), currency: brief.currency, updated_at: new Date().toISOString() }; const { error: saveError } = await supabase.from("campaigns").update(payload).eq("id", selectedCampaign.id); if (saveError) setError(saveError.message); else { const updated = { ...selectedCampaign, ...payload }; setSelectedCampaign(updated); setRows(current => current.map(row => row.id === updated.id ? updated : row)); setNotice("Campaign brief saved. Creator scores now use these requirements."); } setBriefSaving(false); }
+  async function saveBrief() {
+    if (!selectedCampaign) return;
+
+    const budgetValue = brief.budget.trim() === "" ? null : Number(brief.budget);
+    if (budgetValue !== null && (!Number.isFinite(budgetValue) || budgetValue < 0)) {
+      setError("Enter a valid campaign budget of zero or more.");
+      return;
+    }
+    if (brief.start_date && brief.end_date && brief.end_date < brief.start_date) {
+      setError("The end date cannot be earlier than the start date.");
+      return;
+    }
+
+    setBriefSaving(true);
+    setError("");
+    setNotice("");
+
+    const payload = {
+      target_niche: brief.target_niche.trim() || null,
+      target_country: brief.target_country.trim() || null,
+      target_city: brief.target_city.trim() || null,
+      target_audience: brief.target_audience.trim() || null,
+      platforms: splitList(brief.platforms),
+      content_formats: splitList(brief.content_formats),
+      start_date: brief.start_date || null,
+      end_date: brief.end_date || null,
+      is_in_person_event: brief.is_in_person_event,
+      budget: budgetValue,
+      currency: brief.currency,
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data, error: saveError } = await supabase
+        .from("campaigns")
+        .update(payload)
+        .eq("id", selectedCampaign.id)
+        .select("id, name, status, phase, budget, currency, deadline, company:companies(name), " + briefFields)
+        .maybeSingle();
+
+      if (saveError) {
+        setError(`Campaign brief was not saved: ${saveError.message}`);
+      } else if (!data) {
+        setError("Supabase did not update this campaign. Check the campaign ID and your admin UPDATE policy; no success was reported.");
+      } else {
+        const updated = data as unknown as Campaign;
+        setSelectedCampaign(updated);
+        setRows((current) => current.map((row) => row.id === updated.id ? updated : row));
+        setBrief({
+          target_niche: updated.target_niche ?? "",
+          target_country: updated.target_country ?? "",
+          target_city: updated.target_city ?? "",
+          target_audience: updated.target_audience ?? "",
+          platforms: (updated.platforms ?? []).join(", "),
+          content_formats: (updated.content_formats ?? []).join(", "),
+          start_date: updated.start_date ?? "",
+          end_date: updated.end_date ?? "",
+          is_in_person_event: Boolean(updated.is_in_person_event),
+          budget: updated.budget == null ? "" : String(updated.budget),
+          currency: updated.currency || "USD",
+        });
+        setNotice("Campaign brief saved to Supabase and verified. Refreshing the page should keep these values.");
+      }
+    } catch (cause) {
+      setError(`Unexpected error saving campaign brief: ${cause instanceof Error ? cause.message : String(cause)}`);
+    } finally {
+      setBriefSaving(false);
+    }
+  }
 
   async function assignCreator(creator: Creator) {
     if (!selectedCampaign) return;
-    setAssignmentBusyId(creator.id); setError(""); setNotice("");
-    const existing = assignments.find((item) => item.influencer_id === creator.id);
-    if (existing) {
-      if (existing.status === "REMOVED" || existing.status === "DECLINED") {
-        const { error: updateError } = await supabase.from("campaign_creators")
-          .update({ status: "INVITED" }).eq("id", existing.id);
-        if (updateError) setError(updateError.message);
-        else { setNotice(`Invitation renewed for ${creator.display_name}.`); await loadAssignments(selectedCampaign.id); }
+
+    setAssignmentBusyId(creator.id);
+    setError("");
+    setNotice("");
+
+    try {
+      const existing = assignments.find((item) => item.influencer_id === creator.id);
+
+      if (existing && existing.status !== "REMOVED" && existing.status !== "DECLINED") {
+        setNotice(`${creator.display_name} is already assigned (${existing.status}).`);
+        return;
       }
-    } else {
-      const { error: insertError } = await supabase.from("campaign_creators")
-        .insert({ campaign_id: selectedCampaign.id, influencer_id: creator.id, status: "INVITED" });
-      if (insertError) setError(insertError.code === "23505" ? "This creator is already linked to this campaign. Refresh the assignments and try again." : insertError.message);
-      else {
+
+      if (existing) {
+        const { data, error: updateError } = await supabase
+          .from("campaign_creators")
+          .update({ status: "INVITED" })
+          .eq("id", existing.id)
+          .select("id, influencer_id, status, assigned_at")
+          .maybeSingle();
+
+        if (updateError) {
+          setError(`Could not renew invitation: ${updateError.message}`);
+          return;
+        }
+        if (!data) {
+          setError("Supabase did not update the assignment. Check the campaign_creators UPDATE policy.");
+          return;
+        }
+        setNotice(`Invitation renewed for ${creator.display_name}.`);
+      } else {
+        const { data, error: insertError } = await supabase
+          .from("campaign_creators")
+          .insert({
+            campaign_id: selectedCampaign.id,
+            influencer_id: creator.id,
+            status: "INVITED",
+          })
+          .select("id, influencer_id, status, assigned_at")
+          .single();
+
+        if (insertError) {
+          setError(insertError.code === "23505"
+            ? "This creator is already linked to this campaign. Refresh assignments to see the existing record."
+            : `Invitation was not created: ${insertError.message}`);
+          return;
+        }
+        if (!data) {
+          setError("Supabase did not return a new assignment. The invitation was not confirmed.");
+          return;
+        }
         setNotice(`Invitation created for ${creator.display_name}.`);
-        await loadAssignments(selectedCampaign.id);
-        setAssignments((current) => current.some((item) => item.influencer_id === creator.id) ? current : current);
       }
+
+      await loadAssignments(selectedCampaign.id);
+    } catch (cause) {
+      setError(`Unexpected error inviting creator: ${cause instanceof Error ? cause.message : String(cause)}`);
+    } finally {
+      setAssignmentBusyId("");
     }
-    setAssignmentBusyId("");
   }
 
   async function removeCreator(assignment: Assignment) {
