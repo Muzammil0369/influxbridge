@@ -270,3 +270,72 @@ At the end, record commit SHA, user-confirmed behavior, unverified items, and th
 **Immediate instruction: stop work for today.** Invitation response is working per user confirmation. Resume with branch/deployment check, Accept + Decline persistence test, and production build.
 
 **Launch deadline: 15 November 2026 — finish, test, and launch responsibly.**
+
+
+---
+
+## 11. Handoff update — 25 October 2026
+
+**Latest reviewed branch:** `feature/supabase-auth-first`  
+**Latest code commit reviewed:** `bfc8fefac16f0d423deb714ac6e31852eea0ee6f`  
+**Code commit:** [Fix company campaign details and membership lookup](https://github.com/Muzammil0369/influxbridge/commit/bfc8fefac16f0d423deb714ac6e31852eea0ee6f)
+
+### Confirmed in this session
+
+- The user ran `npx tsc --noEmit`; it exited without reporting errors.
+- The user ran `npm run build`; Next.js 16.3.4 completed successfully and generated 26/26 static pages/routes.
+- Company campaign detail page now queries `company_members.user_id` (not the nonexistent `profile_id`) and scopes the campaign lookup by both campaign ID and the membership's `company_id`.
+- User saw the company campaign details page successfully render the Supabase campaign record `Test Fintech Creator`, including budget, dates, niche, location, audience, platforms, and content formats.
+- User pushed commit `bfc8fef` to `origin/feature/supabase-auth-first`.
+
+### Issues discovered in commit review — fix next
+
+1. **Accidentally committed backup file.** Commit `bfc8fef` contains `app/admin/campaigns/page.tsx.bak`. Remove this backup from Git in a follow-up commit; do not delete or overwrite the real `app/admin/campaigns/page.tsx`.
+2. **Text encoding damage in admin campaigns page.** The commit diff shows mojibake such as `ΓÇª`, `ΓÇö`, and `ΓÇô` where characters like ellipsis, em dash, and en dash were intended. The file also has a UTF-8 BOM at the beginning. Inspect and repair the actual file using a reliable UTF-8 editor/write path, preserve all functional changes, then check rendered UI and diff. Do not blindly replace every occurrence without reviewing context.
+3. **Build caveat.** Although `npx tsc --noEmit` passed separately, the build output says Next.js skipped its own type validation; keep the separate TypeScript check as a required verification step.
+4. **Runtime/security verification remains incomplete.** A successful build does not prove realtime subscriptions, RLS, or all account permissions. Test as a company user and verify that a user cannot read a different company's campaign. Confirm the required Realtime publication/configuration and RLS policies for any subscribed tables rather than assuming subscription events always arrive.
+
+### Current schema facts verified by the user
+
+The user queried `information_schema.columns` in Supabase and confirmed:
+
+- `public.company_members`: `company_id uuid`, `user_id uuid`, `role USER-DEFINED`, `created_at timestamptz`.
+- `public.profiles`: `id uuid`, `role USER-DEFINED`, `full_name text`, `avatar_url text`, `created_at timestamptz`, `updated_at timestamptz`.
+
+Do not introduce `company_members.profile_id`; use `user_id` for the membership lookup. Do not modify schema merely to accommodate a wrong frontend column assumption.
+
+### Latest company campaign detail page behavior / known limitations
+
+File: `app/dashboard/company/campaigns/[id]/page.tsx`
+
+- Uses Supabase browser client, calls `auth.getUser()`, redirects unauthenticated users to `/login`, looks up company membership by `user_id`, and filters campaign query by `id` plus `company_id`.
+- Renders the campaign brief and supports manual refresh and sign-out.
+- Attempts Realtime subscriptions for `campaigns` and `campaign_creators`; this behavior has not yet been independently verified in runtime.
+- Creator assignments are currently only represented by placeholder copy on this detail page. The UI says assignments will appear as the campaign progresses; do not claim the company can already manage assignments here.
+- Campaign metrics, deliverable review/approval, and campaign messaging are not yet implemented on this page.
+- Confirm campaign status/phase enum values and date/budget/null handling against actual schema before extending features.
+
+### Git state / next pull
+
+The user used `git add .`, so the backup file was included in the pushed code commit. The commit output reported 3 files changed, 996 insertions and 20 deletions. This is not a reason to reset or rewrite history; remove the backup with a normal follow-up commit.
+
+This TARS update is being committed separately to `feature/supabase-auth-first`. To sync the local checkout after this update, the user should run:
+
+```powershell
+git pull origin feature/supabase-auth-first
+git status
+```
+
+Before pulling, if there are uncommitted local changes, inspect and commit/stash them safely; do not overwrite uncommitted work.
+
+### Next-session priority order
+
+1. Pull the latest branch and confirm clean Git status.
+2. Fix mojibake/BOM in `app/admin/campaigns/page.tsx` without losing working admin features; run `npx tsc --noEmit` and `npm run build`.
+3. Remove `app/admin/campaigns/page.tsx.bak` from version control in a separate intentional cleanup commit.
+4. Re-test company campaign detail page and sign-out in browser.
+5. Verify Realtime delivery, campaign RLS, and cross-company access isolation using separate accounts.
+6. Review company overview, campaigns list, creator network, messages, influencer dashboard/profile, and admin workflows for mock data, dead controls, and authorization gaps.
+7. Update this file again after meaningful verified progress; record commit SHA and distinguish user-tested behavior from code-only inspection.
+
+**Status:** Git push succeeded and local build/type check were reported successful by the user. The repository is not yet “all set”: encoding cleanup, backup-file cleanup, runtime/Realtime testing, and wider security/feature review remain open.
