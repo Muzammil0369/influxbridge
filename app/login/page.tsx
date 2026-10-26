@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -19,14 +21,86 @@ type Role = "company" | "influencer";
 export default function LoginPage() {
   const [role, setRole] = useState<Role>("company");
   const [showPassword, setShowPassword] = useState(false);
-  const [remember, setRemember] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [notice, setNotice] = useState("");
+  const router = useRouter();
+  const supabase = createClient();
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitted(true);
+    setLoading(true);
+    setErrorMessage("");
+    setNotice("");
+
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: email.trim(),
+      password,
+    });
+
+    if (error || !data.user) {
+      setErrorMessage(error?.message ?? "Unable to sign in. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", data.user.id)
+      .maybeSingle();
+
+    if (profileError || !profile) {
+      await supabase.auth.signOut();
+      setErrorMessage(
+        "Your account is authenticated, but its InfluxBridge profile is not set up yet. Please contact a founder to finish account setup.",
+      );
+      setLoading(false);
+      return;
+    }
+
+    if (profile.role === "ADMIN") {
+      router.replace("/admin");
+    } else if (profile.role === "COMPANY" && role === "company") {
+      router.replace("/dashboard/company");
+    } else if (profile.role === "INFLUENCER" && role === "influencer") {
+      const { data: creatorProfile } = await supabase
+        .from("influencer_profiles")
+        .select("id")
+        .eq("id", data.user.id)
+        .maybeSingle();
+      router.replace(creatorProfile ? "/dashboard/influencer" : "/join/influencer/profile");
+    } else {
+      await supabase.auth.signOut();
+      setErrorMessage("This account does not match the selected workspace.");
+      setLoading(false);
+      return;
+    }
+
+    router.refresh();
+  }
+
+  async function handlePasswordReset() {
+    setErrorMessage("");
+    setNotice("");
+    if (!email.trim()) {
+      setErrorMessage("Enter your email address first, then choose Forgot password.");
+      return;
+    }
+
+    setLoading(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    });
+    setLoading(false);
+
+    if (error) {
+      setErrorMessage(error.message);
+    } else {
+      setNotice("If an account exists for that email, a password-reset link will be sent.");
+    }
   }
 
   return (
@@ -166,125 +240,84 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {/* Success View */}
-              {submitted ? (
-                <div className="rounded-2xl border border-cyan-400/30 bg-cyan-500/10 p-6 text-center">
-                  <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-cyan-400/20">
-                    <Sparkles className="h-5 w-5 text-cyan-300" />
-                  </div>
-
-                  <h3 className="text-xl font-semibold text-white">
-                    Demo login successful
-                  </h3>
-
-                  <p className="mt-2 text-sm leading-6 text-white/70">
-                    This is currently a frontend-only login. Real
-                    authentication and dashboards will be connected later.
-                  </p>
-
-                  <button
-                    type="button"
-                    onClick={() => setSubmitted(false)}
-                    className="mt-6 text-sm font-medium text-cyan-400 transition hover:text-cyan-300"
-                  >
-                    Back to login
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Email */}
-                  <div>
-                    <label className="mb-2 block text-sm font-semibold text-white/80">
-                      Email address
-                    </label>
-
-                    <div className="relative">
-                      <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400/70" />
-
-                      <input
-                        type="email"
-                        required
-                        value={email}
-                        onChange={(event) => setEmail(event.target.value)}
-                        placeholder={
-                          role === "company"
-                            ? "you@company.com"
-                            : "you@example.com"
-                        }
-                        className="h-12 w-full rounded-xl border border-blue-500/30 bg-[#031326]/60 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-400 focus:bg-[#031326]"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Password */}
-                  <div>
-                    <div className="mb-2 flex items-center justify-between">
-                      <label className="block text-sm font-semibold text-white/80">
-                        Password
-                      </label>
-
-                      <button
-                        type="button"
-                        className="text-xs text-cyan-400 transition hover:text-cyan-300"
-                      >
-                        Forgot password?
-                      </button>
-                    </div>
-
-                    <div className="relative">
-                      <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400/70" />
-
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        required
-                        value={password}
-                        onChange={(event) => setPassword(event.target.value)}
-                        placeholder="Enter your password"
-                        className="h-12 w-full rounded-xl border border-blue-500/30 bg-[#031326]/60 pl-11 pr-12 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-400 focus:bg-[#031326]"
-                      />
-
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 transition hover:text-white"
-                        aria-label={
-                          showPassword ? "Hide password" : "Show password"
-                        }
-                      >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Remember */}
-                  <label className="flex cursor-pointer items-center gap-3 text-sm text-white/70">
-                    <input
-                      type="checkbox"
-                      checked={remember}
-                      onChange={(event) => setRemember(event.target.checked)}
-                      className="h-4 w-4 rounded border-blue-500/50 bg-black/30 accent-cyan-400"
-                    />
-                    Remember me
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div>
+                  <label className="mb-2 block text-sm font-semibold text-white/80">
+                    Email address
                   </label>
+                  <div className="relative">
+                    <Mail className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400/70" />
+                    <input
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                      placeholder={role === "company" ? "you@company.com" : "you@example.com"}
+                      className="h-12 w-full rounded-xl border border-blue-500/30 bg-[#031326]/60 pl-11 pr-4 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-400 focus:bg-[#031326]"
+                    />
+                  </div>
+                </div>
 
-                  {/* Submit */}
-                  <button
-                    type="submit"
-                    className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-black transition hover:bg-cyan-50 shadow-[0_0_20px_rgba(255,255,255,0.2)]"
-                  >
-                    Sign in as{" "}
-                    {role === "company" ? "Company" : "Influencer"}
-                    <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </button>
-                </form>
-              )}
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="block text-sm font-semibold text-white/80">
+                      Password
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handlePasswordReset}
+                      disabled={loading}
+                      className="text-xs text-cyan-400 transition hover:text-cyan-300 disabled:opacity-50"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <LockKeyhole className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-cyan-400/70" />
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      autoComplete="current-password"
+                      required
+                      minLength={6}
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                      placeholder="Enter your password"
+                      className="h-12 w-full rounded-xl border border-blue-500/30 bg-[#031326]/60 pl-11 pr-12 text-sm text-white outline-none placeholder:text-white/30 transition focus:border-cyan-400 focus:bg-[#031326]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 text-white/40 transition hover:text-white"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {errorMessage && (
+                  <p role="alert" className="rounded-xl border border-red-400/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+                    {errorMessage}
+                  </p>
+                )}
+                {notice && (
+                  <p role="status" className="rounded-xl border border-cyan-400/30 bg-cyan-500/10 px-4 py-3 text-sm text-cyan-100">
+                    {notice}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="group flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-white px-5 text-sm font-bold text-black transition hover:bg-cyan-50 shadow-[0_0_20px_rgba(255,255,255,0.2)] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {loading ? "Signing in..." : <>Sign in as {role === "company" ? "Company" : "Influencer"} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></>}
+                </button>
+              </form>
 
               {/* Divider & Footer links */}
-              {!submitted && (
+              {(
                 <>
                   <div className="my-7 flex items-center gap-4">
                     <div className="h-px flex-1 bg-white/10" />
@@ -297,10 +330,10 @@ export default function LoginPage() {
                       Don&apos;t have an account?
                     </span>{" "}
                     <Link
-                      href={role === "company" ? "/contact" : "/join/influencer"}
+                      href={role === "company" ? "/join/company" : "/join/influencer"}
                       className="text-sm font-semibold text-cyan-400 transition hover:text-cyan-300"
                     >
-                      {role === "company" ? "Start a Campaign" : "Join the Network"}
+                      {role === "company" ? "Create a Company Account" : "Join the Network"}
                     </Link>
                   </div>
                 </>

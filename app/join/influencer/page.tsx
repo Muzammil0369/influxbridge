@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useMemo, useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import {
   ArrowLeft,
   ArrowRight,
@@ -21,6 +22,11 @@ export default function InfluencerJoinPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [attempted, setAttempted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const [confirmationRequired, setConfirmationRequired] = useState(false);
+  const [resendingConfirmation, setResendingConfirmation] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -80,7 +86,17 @@ export default function InfluencerJoinPage() {
     }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleResendConfirmation = async () => {
+    if (!formData.email.trim() || resendingConfirmation) return;
+    setResendingConfirmation(true);
+    setResendMessage("");
+    const supabase = createClient();
+    const { error } = await supabase.auth.resend({ type: "signup", email: formData.email.trim() });
+    setResendingConfirmation(false);
+    setResendMessage(error ? error.message : "If this address needs confirmation, a fresh verification email is on its way. Check your inbox and spam folder.");
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setAttempted(true);
 
@@ -92,8 +108,32 @@ export default function InfluencerJoinPage() {
       passwordsMatch &&
       formData.terms;
 
-    if (!valid) return;
+    if (!valid || submitting) return;
 
+    setSubmitting(true);
+    setSubmitError("");
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email: formData.email.trim(),
+      password: formData.password,
+      options: {
+        data: {
+          role: "INFLUENCER",
+          full_name: formData.fullName.trim(),
+          display_name: formData.displayName.trim(),
+        },
+      },
+    });
+    setSubmitting(false);
+    if (error) {
+      setSubmitError(error.message);
+      return;
+    }
+    if (!data.user) {
+      setSubmitError("Supabase did not return a user. Please try again.");
+      return;
+    }
+    setConfirmationRequired(!data.session);
     setSubmitted(true);
   };
 
@@ -428,9 +468,9 @@ export default function InfluencerJoinPage() {
                     {/* Submit */}
                     <button
                       type="submit"
-                      className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110 active:scale-[0.99]"
+                      className="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110 active:scale-[0.99] disabled:cursor-wait disabled:opacity-60"
                     >
-                      Create Creator Account
+                      {submitting ? "Creating account…" : "Create Creator Account"}
                       <ArrowRight
                         size={17}
                         className="transition-transform group-hover:translate-x-1"
@@ -457,17 +497,15 @@ export default function InfluencerJoinPage() {
                   </div>
 
                   <p className="mt-7 text-xs uppercase tracking-[0.2em] text-cyan-300">
-                    Account Created
+                    {confirmationRequired ? "Check Your Email" : "Account Created"}
                   </p>
 
                   <h2 className="mt-3 text-3xl font-semibold tracking-tight">
-                    Your creator journey starts here.
+                    {confirmationRequired ? "Check your inbox." : "Your creator journey starts here."}
                   </h2>
 
                   <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/45">
-                    Your account setup is complete in this prototype. Continue
-                    to build your creator profile with your niche, social
-                    channels, audience and portfolio.
+                    {confirmationRequired ? "We sent a verification link to " + formData.email + ". Confirm your email to activate your account, then sign in to finish your creator profile." : "Your account is created securely. Continue to build your creator profile with your niche, social channels, audience and portfolio."}
                   </p>
 
                   <div className="mt-8 rounded-2xl border border-cyan-400/10 bg-cyan-400/[0.04] p-5 text-left">
@@ -488,16 +526,20 @@ export default function InfluencerJoinPage() {
                     </div>
                   </div>
 
-                  <Link
-                    href="/join/influencer/profile"
-                    className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110"
-                  >
-                    Continue to Creator Profile
-                    <ArrowRight
-                      size={17}
-                      className="transition-transform group-hover:translate-x-1"
-                    />
-                  </Link>
+                  {confirmationRequired ? (
+                    <div className="mt-8 space-y-3">
+                      <button type="button" onClick={handleResendConfirmation} disabled={resendingConfirmation} className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110 disabled:opacity-60">
+                        <Mail size={17} /> {resendingConfirmation ? "Sending verification email…" : "Resend verification email"}
+                      </button>
+                      {resendMessage && <p role="status" className="text-xs leading-5 text-cyan-200/80">{resendMessage}</p>}
+                      <p className="text-center text-xs leading-5 text-white/35">Already verified? Sign in to continue your profile.</p>
+                      <Link href="/login" className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/10 px-5 py-3 text-sm font-medium text-white/75 transition hover:bg-white/[.05]">Continue to login <ArrowRight size={16}/></Link>
+                    </div>
+                  ) : (
+                    <Link href="/login" className="group mt-8 inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-cyan-400 via-blue-500 to-violet-500 px-5 py-3.5 text-sm font-semibold text-black transition hover:brightness-110">
+                      Go to Sign In <ArrowRight size={17} className="transition-transform group-hover:translate-x-1"/>
+                    </Link>
+                  )}
 
                   <Link
                     href="/login"
